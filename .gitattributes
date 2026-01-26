@@ -1,0 +1,45 @@
+###############################################################################
+# Line endings normalization
+#
+# Goal:
+# - Keep repository text files in LF (recommended for JS/React projects)
+# - Keep Windows-only scripts in CRLF
+#
+# This reduces "LF will be replaced by CRLF" warnings and prevents noisy diffs.
+###############################################################################
+
+# Auto-detect text files and normalize to LF in the repository.
+* text=auto eol=lf
+
+# Common web/project text formats — always LF.
+*.js   text eol=lf
+*.jsx  text eol=lf
+*.ts   text eol=lf
+*.tsx  text eol=lf
+*.css  text eol=lf
+*.scss text eol=lf
+*.sass text eol=lf
+*.less text eol=lf
+*.html text eol=lf
+*.json text eol=lf
+*.yml  text eol=lf
+*.yaml text eol=lf
+*.md   text eol=lf
+*.svg  text eol=lf
+
+# Shell scripts — always LF (important if you use WSL/Docker/CI).
+*.sh   text eol=lf
+
+# Windows scripts — keep CRLF.
+*.bat  text eol=crlf
+*.cmd  text eol=crlf
+*.ps1  text eol=crlf
+
+# Binary files — never modify.
+*.png  binary
+*.jpg  binary
+*.jpeg binary
+*.gif  binary
+*.ico  binary
+*.pdf  binary
+*.zip  binary
