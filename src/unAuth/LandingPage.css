@@ -1,0 +1,12 @@
+.landing-page {
+  min-height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.rainbow-text {
+  margin: 0;
+  font-size: clamp(1.5rem, 5vw, 3rem);
+  letter-spacing: 0.02em;
+}
