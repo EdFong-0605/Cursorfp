@@ -1,13 +1,12 @@
 .landing-page {
+  min-height: 100vh;
   display: flex;
   justify-content: center;
   align-items: center;
-  min-height: 100vh;
 }
 
-.landing-message {
-  font-size: 1.5rem;
-  font-weight: 500;
-  color: #333;
+.rainbow-text {
   margin: 0;
+  font-size: clamp(1.5rem, 5vw, 3rem);
+  letter-spacing: 0.02em;
 }
