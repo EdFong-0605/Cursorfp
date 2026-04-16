@@ -1,0 +1,21 @@
+/* Fixed-height search strip; does not shrink in flex layouts. */
+
+.searchbar-sheet {
+  box-sizing: border-box;
+  width: 100%;
+  height: 150px;
+  min-height: 100px;
+  flex-shrink: 0;
+  border: 2px solid #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Placeholder label. */
+
+.searchbar-sheet__title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #000;
+}

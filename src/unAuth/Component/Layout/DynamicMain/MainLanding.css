@@ -1,0 +1,20 @@
+/* Flexible main pane between search and footer. */
+
+.main-landing-sheet {
+  box-sizing: border-box;
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 200px;
+  border: 2px solid #000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Placeholder label styling. */
+
+.main-landing-sheet__title {
+  font-size: 1rem;
+  font-weight: 600;
+  color: #000;
+}

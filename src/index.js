@@ -1,3 +1,7 @@
+/**
+ * Entry point: wires global CSS, mounts <App /> into #root, enables StrictMode.
+ * reportWebVitals is optional CRA performance hookup (see CRA docs).
+ */
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';
