@@ -1,0 +1,27 @@
+/* Outer row: sidebar + content column. Content column stacks search / main / footer. */
+
+.landing-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: row;
+  align-items: flex-start;
+  width: 100%;
+}
+
+/* Main column beside NavBar; flex child grows horizontally. */
+
+.landing-page__content {
+  display: flex;
+  flex-direction: column;
+  flex: 1 1 auto;
+  min-width: 0;
+  min-height: 100vh;
+}
+
+/* Utility heading style (use on elements with class rainbow-text). */
+
+.rainbow-text {
+  margin: 0;
+  font-size: clamp(1.5rem, 5vw, 3rem);
+  letter-spacing: 0.02em;
+}

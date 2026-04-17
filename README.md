@@ -2,6 +2,24 @@
 
 This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
 
+## Source code overview
+
+High-level map of `src/` and what each part is responsible for.
+
+| File / folder | Role |
+|---------------|------|
+| `index.js` | Application entry: mounts React to `#root`, wraps the tree in `StrictMode`, runs `reportWebVitals`. |
+| `index.css` | Global styles (body reset, font stack, `code` styling). |
+| `App.js` | Root component: wraps the current route or screen (e.g. unauthenticated landing). |
+| `App.css` | Styles for the `.App` wrapper, if any. |
+| `firebase.js` | Firebase app init and analytics; reads config from `REACT_APP_*` env vars. |
+| `unAuth/Landing Page/` | **Landing screen**: composes the main layout (sidebar + content column). |
+| `unAuth/Component/Layout/` | **Shell UI**: `NavBar`, `SearchBar`, `MainLanding`, `Footer` and their CSS. |
+| `unAuth/Component/Layout/DynamicMain/` | **Main content region** for the landing layout (primary scroll/focus area as you extend it). |
+| `unAuth/Component/Common/` | **Shared widgets** (e.g. `Button`) used across layout and future screens. |
+
+**Layout flow:** `App` → `LandingPage` → a row with `NavBar` on the left and `landing-page__content` on the right. The content column stacks `SearchBar`, `MainLanding`, and `Footer`. Pair each `.js` file with its matching `.css` file for layout and appearance.
+
 ## Available Scripts
 
 In the project directory, you can run:
@@ -68,5 +86,3 @@ This section has moved here: [https://facebook.github.io/create-react-app/docs/d
 ### `npm run build` fails to minify
 
 This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
-
-I am going to change some shit
