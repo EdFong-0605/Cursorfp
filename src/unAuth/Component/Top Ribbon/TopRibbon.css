@@ -1,0 +1,16 @@
+/* Same vertical rhythm as .navbar-sheet__top (150px); continues the black header band. */
+
+.top-ribbon {
+  box-sizing: border-box;
+  width: 100%;
+  flex-shrink: 0;
+  height: 150px;
+  min-height: 150px;
+  max-height: 150px;
+  background-color: #000000;
+  /* Accent line lives on MainLanding + nav body-right so the seam aligns (no double line here). */
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 24px;
+}

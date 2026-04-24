@@ -1,0 +1,276 @@
+[debug] [2026-04-24T03:36:45.718Z] ----------------------------------------------------------------------
+[debug] [2026-04-24T03:36:45.720Z] Command:       C:\Users\Eden\node.exe C:\Users\Eden\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js emulators:start
+[debug] [2026-04-24T03:36:45.720Z] CLI Version:   15.15.0
+[debug] [2026-04-24T03:36:45.720Z] Platform:      win32
+[debug] [2026-04-24T03:36:45.720Z] Node Version:  v24.13.0
+[debug] [2026-04-24T03:36:45.720Z] Time:          Thu Apr 23 2026 20:36:45 GMT-0700 (Pacific Daylight Time)
+[debug] [2026-04-24T03:36:45.720Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2026-04-24T03:36:45.721Z] >>> [apiv2][query] GET https://firebase-public.firebaseio.com/cli.json [none]
+[debug] [2026-04-24T03:37:00.547Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2026-04-24T03:37:00.547Z] > authorizing via signed-in user (eden0fong065@gmail.com)
+[info] i  emulators: Starting emulators: functions, hosting, extensions {"metadata":{"emulator":{"name":"hub"},"message":"Starting emulators: functions, hosting, extensions"}}
+[debug] [2026-04-24T03:37:00.550Z] Checked if tokens are valid: false, expires at: 1776918425740
+[debug] [2026-04-24T03:37:00.550Z] Checked if tokens are valid: false, expires at: 1776918425740
+[debug] [2026-04-24T03:37:00.550Z] > refreshing access token with scopes: []
+[debug] [2026-04-24T03:37:00.551Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2026-04-24T03:37:00.551Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-04-24T03:37:00.712Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2026-04-24T03:37:00.713Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2026-04-24T03:37:00.725Z] >>> [apiv2][query] GET https://cloudresourcemanager.googleapis.com/v1/projects/lynkfiprod [none]
+[debug] [2026-04-24T03:37:00.726Z] <<< [apiv2][status] GET https://firebase-public.firebaseio.com/cli.json 200
+[debug] [2026-04-24T03:37:00.726Z] <<< [apiv2][body] GET https://firebase-public.firebaseio.com/cli.json {"cloudBuildErrorAfter":1594252800000,"cloudBuildWarnAfter":1590019200000,"defaultNode10After":1594252800000,"minVersion":"3.0.5","node8DeploysDisabledAfter":1613390400000,"node8RuntimeDisabledAfter":1615809600000,"node8WarnAfter":1600128000000}
+[debug] [2026-04-24T03:37:00.911Z] <<< [apiv2][status] GET https://cloudresourcemanager.googleapis.com/v1/projects/lynkfiprod 200
+[debug] [2026-04-24T03:37:00.911Z] <<< [apiv2][body] GET https://cloudresourcemanager.googleapis.com/v1/projects/lynkfiprod {"projectNumber":"249676771406","projectId":"lynkfiprod","lifecycleState":"ACTIVE","name":"LynkFiProd","labels":{"firebase":"enabled","firebase-core":"disabled"},"createTime":"2026-04-13T02:52:33.313Z"}
+[debug] [2026-04-24T03:37:00.919Z] [logging] Logging Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2026-04-24T03:37:00.919Z] [hosting] Hosting Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2026-04-24T03:37:00.919Z] assigned listening specs for emulators {"user":{"hub":[{"address":"127.0.0.1","family":"IPv4","port":4400},{"address":"::1","family":"IPv6","port":4400}],"ui":[{"address":"127.0.0.1","family":"IPv4","port":4000},{"address":"::1","family":"IPv6","port":4000}],"logging":[{"address":"127.0.0.1","family":"IPv4","port":4500}],"hosting":[{"address":"127.0.0.1","family":"IPv4","port":5000}]},"metadata":{"message":"assigned listening specs for emulators"}}
+[debug] [2026-04-24T03:37:00.923Z] Write emulator hub locator at C:\Users\Eden\AppData\Local\Temp\hub-lynkfiprod.json
+[debug] [2026-04-24T03:37:00.927Z] [Extensions] Started Extensions emulator, this is a noop.
+[debug] [2026-04-24T03:37:00.930Z] [functions] Functions Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2026-04-24T03:37:00.930Z] [eventarc] Eventarc Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2026-04-24T03:37:00.930Z] [tasks] Cloud Tasks Emulator only supports listening on one address (127.0.0.1). Not listening on ::1
+[debug] [2026-04-24T03:37:00.930Z] late-assigned ports for functions and eventarc emulators {"user":{"hub":[{"address":"127.0.0.1","family":"IPv4","port":4400},{"address":"::1","family":"IPv6","port":4400}],"ui":[{"address":"127.0.0.1","family":"IPv4","port":4000},{"address":"::1","family":"IPv6","port":4000}],"logging":[{"address":"127.0.0.1","family":"IPv4","port":4500}],"hosting":[{"address":"127.0.0.1","family":"IPv4","port":5000}],"functions":[{"address":"127.0.0.1","family":"IPv4","port":5001}],"eventarc":[{"address":"127.0.0.1","family":"IPv4","port":9299}],"tasks":[{"address":"127.0.0.1","family":"IPv4","port":9499}]},"metadata":{"message":"late-assigned ports for functions and eventarc emulators"}}
+[warn] !  functions: The following emulators are not running, calls to these services from the Functions emulator will affect production: apphosting, auth, firestore, database, pubsub, storage, dataconnect {"metadata":{"emulator":{"name":"functions"},"message":"The following emulators are not running, calls to these services from the Functions emulator will affect production: \u001b[1mapphosting, auth, firestore, database, pubsub, storage, dataconnect\u001b[22m"}}
+[debug] [2026-04-24T03:37:00.959Z] defaultcredentials: writing to file C:\Users\Eden\AppData\Roaming\firebase\eden0fong065_gmail_com_application_default_credentials.json
+[debug] [2026-04-24T03:37:00.961Z] Setting GAC to C:\Users\Eden\AppData\Roaming\firebase\eden0fong065_gmail_com_application_default_credentials.json {"metadata":{"emulator":{"name":"functions"},"message":"Setting GAC to C:\\Users\\Eden\\AppData\\Roaming\\firebase\\eden0fong065_gmail_com_application_default_credentials.json"}}
+[debug] [2026-04-24T03:37:00.961Z] Checked if tokens are valid: true, expires at: 1777005419713
+[debug] [2026-04-24T03:37:00.961Z] Checked if tokens are valid: true, expires at: 1777005419713
+[debug] [2026-04-24T03:37:00.961Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/lynkfiprod/adminSdkConfig [none]
+[debug] [2026-04-24T03:37:01.210Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/lynkfiprod/adminSdkConfig 200
+[debug] [2026-04-24T03:37:01.210Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/lynkfiprod/adminSdkConfig {"projectId":"lynkfiprod","storageBucket":"lynkfiprod.firebasestorage.app"}
+[debug] [2026-04-24T03:37:01.224Z] Checked if tokens are valid: true, expires at: 1777005419713
+[debug] [2026-04-24T03:37:01.224Z] Checked if tokens are valid: true, expires at: 1777005419713
+[debug] [2026-04-24T03:37:01.224Z] >>> [apiv2][query] GET https://firebasehosting.googleapis.com/v1beta1/projects/lynkfiprod/sites 
+[debug] [2026-04-24T03:37:02.094Z] <<< [apiv2][status] GET https://firebasehosting.googleapis.com/v1beta1/projects/lynkfiprod/sites 200
+[debug] [2026-04-24T03:37:02.094Z] <<< [apiv2][body] GET https://firebasehosting.googleapis.com/v1beta1/projects/lynkfiprod/sites {"sites":[{"name":"projects/lynkfiprod/sites/lynkfiprod","defaultUrl":"https://lynkfiprod.web.app","appId":"1:249676771406:web:d6dcd9360fb0543bda531f","type":"DEFAULT_SITE"}]}
+[debug] [2026-04-24T03:37:02.094Z] Checked if tokens are valid: true, expires at: 1777005419713
+[debug] [2026-04-24T03:37:02.094Z] Checked if tokens are valid: true, expires at: 1777005419713
+[debug] [2026-04-24T03:37:02.095Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/lynkfiprod/webApps/1:249676771406:web:d6dcd9360fb0543bda531f/config [none]
+[debug] [2026-04-24T03:37:02.478Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/lynkfiprod/webApps/1:249676771406:web:d6dcd9360fb0543bda531f/config 200
+[debug] [2026-04-24T03:37:02.478Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/lynkfiprod/webApps/1:249676771406:web:d6dcd9360fb0543bda531f/config {"projectId":"lynkfiprod","appId":"1:249676771406:web:d6dcd9360fb0543bda531f","storageBucket":"lynkfiprod.firebasestorage.app","apiKey":"AIzaSyDTm44BraCd20pvUnRjo_q1JR4KdlG94Js","authDomain":"lynkfiprod.firebaseapp.com","messagingSenderId":"249676771406","measurementId":"G-DW96Q2ESSQ","projectNumber":"249676771406","version":"2"}
+[debug] [2026-04-24T03:37:02.495Z] Checked if tokens are valid: true, expires at: 1777005419713
+[debug] [2026-04-24T03:37:02.495Z] Checked if tokens are valid: true, expires at: 1777005419713
+[debug] [2026-04-24T03:37:02.495Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/lynkfiprod [none]
+[debug] [2026-04-24T03:37:02.628Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/lynkfiprod 200
+[debug] [2026-04-24T03:37:02.628Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/lynkfiprod {"projectId":"lynkfiprod","projectNumber":"249676771406","displayName":"LynkFiProd","name":"projects/lynkfiprod","resources":{"hostingSite":"lynkfiprod"},"state":"ACTIVE","etag":"1_0fd3ec9e-d243-4562-a5f2-d10b2608fca1"}
+[info] i  hosting[lynkfiprod]: Serving hosting files from: build {"metadata":{"emulator":{"name":"hosting"},"message":"Serving hosting files from: \u001b[1mbuild\u001b[22m"}}
+[info] +  hosting[lynkfiprod]: Local server: http://127.0.0.1:5000 {"metadata":{"emulator":{"name":"hosting"},"message":"Local server: \u001b[4m\u001b[1mhttp://127.0.0.1:5000\u001b[22m\u001b[24m"}}
+[info] i  ui: downloading ui-v1.15.0.zip... {"metadata":{"emulator":{"name":"ui"},"message":"downloading ui-v1.15.0.zip..."}}
+[debug] [2026-04-24T03:37:02.706Z] >>> [apiv2][query] GET https://storage.googleapis.com/firebase-preview-drop/emulator/ui-v1.15.0.zip 
+[debug] [2026-04-24T03:37:02.791Z] <<< [apiv2][status] GET https://storage.googleapis.com/firebase-preview-drop/emulator/ui-v1.15.0.zip 200
+[debug] [2026-04-24T03:37:02.791Z] <<< [apiv2][body] GET https://storage.googleapis.com/firebase-preview-drop/emulator/ui-v1.15.0.zip [stream]
+[debug] [2026-04-24T03:37:03.006Z] Data is 3538469
+[debug] [2026-04-24T03:37:03.006Z] [unzip] Entry: client/ (compressed_size=0 bytes, uncompressed_size=0 bytes)
+[debug] [2026-04-24T03:37:03.006Z] [unzip] Processing entry: client\
+[debug] [2026-04-24T03:37:03.006Z] [unzip] mkdir: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\
+[debug] [2026-04-24T03:37:03.007Z] [unzip] Entry: client/favicon-16x16.png (compressed_size=293 bytes, uncompressed_size=293 bytes)
+[debug] [2026-04-24T03:37:03.007Z] [unzip] Processing entry: client\favicon-16x16.png
+[debug] [2026-04-24T03:37:03.007Z] [unzip] else mkdir: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client
+[debug] [2026-04-24T03:37:03.007Z] [unzip] Writing file: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\favicon-16x16.png
+[debug] [2026-04-24T03:37:03.008Z] [unzip] Entry: client/safari-pinned-tab.svg (compressed_size=1433 bytes, uncompressed_size=2611 bytes)
+[debug] [2026-04-24T03:37:03.008Z] [unzip] Processing entry: client\safari-pinned-tab.svg
+[debug] [2026-04-24T03:37:03.008Z] [unzip] else mkdir: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client
+[debug] [2026-04-24T03:37:03.008Z] [unzip] deflating: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\safari-pinned-tab.svg
+[debug] [2026-04-24T03:37:03.010Z] [unzip] Entry: client/favicon.ico (compressed_size=2933 bytes, uncompressed_size=13294 bytes)
+[debug] [2026-04-24T03:37:03.010Z] [unzip] Processing entry: client\favicon.ico
+[debug] [2026-04-24T03:37:03.010Z] [unzip] else mkdir: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client
+[debug] [2026-04-24T03:37:03.010Z] [unzip] deflating: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\favicon.ico
+[debug] [2026-04-24T03:37:03.011Z] [unzip] Entry: client/index.html (compressed_size=1364 bytes, uncompressed_size=3071 bytes)
+[debug] [2026-04-24T03:37:03.011Z] [unzip] Processing entry: client\index.html
+[debug] [2026-04-24T03:37:03.011Z] [unzip] else mkdir: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client
+[debug] [2026-04-24T03:37:03.011Z] [unzip] deflating: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\index.html
+[debug] [2026-04-24T03:37:03.012Z] [unzip] Entry: client/android-chrome-192x192.png (compressed_size=2684 bytes, uncompressed_size=2684 bytes)
+[debug] [2026-04-24T03:37:03.012Z] [unzip] Processing entry: client\android-chrome-192x192.png
+[debug] [2026-04-24T03:37:03.012Z] [unzip] else mkdir: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client
+[debug] [2026-04-24T03:37:03.012Z] [unzip] Writing file: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\android-chrome-192x192.png
+[debug] [2026-04-24T03:37:03.013Z] [unzip] Entry: client/apple-touch-icon.png (compressed_size=2123 bytes, uncompressed_size=2152 bytes)
+[debug] [2026-04-24T03:37:03.013Z] [unzip] Processing entry: client\apple-touch-icon.png
+[debug] [2026-04-24T03:37:03.013Z] [unzip] else mkdir: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client
+[debug] [2026-04-24T03:37:03.013Z] [unzip] deflating: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\apple-touch-icon.png
+[debug] [2026-04-24T03:37:03.014Z] [unzip] Entry: client/android-chrome-512x512.png (compressed_size=5369 bytes, uncompressed_size=5411 bytes)
+[debug] [2026-04-24T03:37:03.014Z] [unzip] Processing entry: client\android-chrome-512x512.png
+[debug] [2026-04-24T03:37:03.014Z] [unzip] else mkdir: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client
+[debug] [2026-04-24T03:37:03.014Z] [unzip] deflating: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\android-chrome-512x512.png
+[debug] [2026-04-24T03:37:03.015Z] [unzip] Entry: client/manifest.json (compressed_size=245 bytes, uncompressed_size=551 bytes)
+[debug] [2026-04-24T03:37:03.015Z] [unzip] Processing entry: client\manifest.json
+[debug] [2026-04-24T03:37:03.015Z] [unzip] else mkdir: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client
+[debug] [2026-04-24T03:37:03.015Z] [unzip] deflating: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\manifest.json
+[debug] [2026-04-24T03:37:03.016Z] [unzip] Entry: client/robots.txt (compressed_size=26 bytes, uncompressed_size=26 bytes)
+[debug] [2026-04-24T03:37:03.016Z] [unzip] Processing entry: client\robots.txt
+[debug] [2026-04-24T03:37:03.016Z] [unzip] else mkdir: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client
+[debug] [2026-04-24T03:37:03.016Z] [unzip] Writing file: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\robots.txt
+[debug] [2026-04-24T03:37:03.016Z] [unzip] Entry: client/mstile-150x150.png (compressed_size=2034 bytes, uncompressed_size=2034 bytes)
+[debug] [2026-04-24T03:37:03.016Z] [unzip] Processing entry: client\mstile-150x150.png
+[debug] [2026-04-24T03:37:03.016Z] [unzip] else mkdir: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client
+[debug] [2026-04-24T03:37:03.016Z] [unzip] Writing file: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\mstile-150x150.png
+[debug] [2026-04-24T03:37:03.017Z] [unzip] Entry: client/assets/ (compressed_size=0 bytes, uncompressed_size=0 bytes)
+[debug] [2026-04-24T03:37:03.017Z] [unzip] Processing entry: client\assets\
+[debug] [2026-04-24T03:37:03.017Z] [unzip] mkdir: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\assets\
+[debug] [2026-04-24T03:37:03.017Z] [unzip] Entry: client/assets/index-BX-A56oj.js (compressed_size=582089 bytes, uncompressed_size=2092775 bytes)
+[debug] [2026-04-24T03:37:03.017Z] [unzip] Processing entry: client\assets\index-BX-A56oj.js
+[debug] [2026-04-24T03:37:03.017Z] [unzip] else mkdir: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\assets
+[debug] [2026-04-24T03:37:03.018Z] [unzip] deflating: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\assets\index-BX-A56oj.js
+[debug] [2026-04-24T03:37:03.026Z] [unzip] Entry: client/assets/index-CjB9C900.css (compressed_size=35979 bytes, uncompressed_size=298654 bytes)
+[debug] [2026-04-24T03:37:03.026Z] [unzip] Processing entry: client\assets\index-CjB9C900.css
+[debug] [2026-04-24T03:37:03.026Z] [unzip] else mkdir: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\assets
+[debug] [2026-04-24T03:37:03.026Z] [unzip] deflating: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\assets\index-CjB9C900.css
+[debug] [2026-04-24T03:37:03.028Z] [unzip] Entry: client/assets/index-BX-A56oj.js.map (compressed_size=2362482 bytes, uncompressed_size=10036679 bytes)
+[debug] [2026-04-24T03:37:03.028Z] [unzip] Processing entry: client\assets\index-BX-A56oj.js.map
+[debug] [2026-04-24T03:37:03.028Z] [unzip] else mkdir: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\assets
+[debug] [2026-04-24T03:37:03.028Z] [unzip] deflating: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\assets\index-BX-A56oj.js.map
+[debug] [2026-04-24T03:37:03.064Z] [unzip] Entry: client/assets/extensions/ (compressed_size=0 bytes, uncompressed_size=0 bytes)
+[debug] [2026-04-24T03:37:03.064Z] [unzip] Processing entry: client\assets\extensions\
+[debug] [2026-04-24T03:37:03.064Z] [unzip] mkdir: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\assets\extensions\
+[debug] [2026-04-24T03:37:03.064Z] [unzip] Entry: client/assets/extensions/default-extension.png (compressed_size=1646 bytes, uncompressed_size=1657 bytes)
+[debug] [2026-04-24T03:37:03.064Z] [unzip] Processing entry: client\assets\extensions\default-extension.png
+[debug] [2026-04-24T03:37:03.064Z] [unzip] else mkdir: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\assets\extensions
+[debug] [2026-04-24T03:37:03.064Z] [unzip] deflating: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\assets\extensions\default-extension.png
+[debug] [2026-04-24T03:37:03.065Z] [unzip] Entry: client/assets/img/ (compressed_size=0 bytes, uncompressed_size=0 bytes)
+[debug] [2026-04-24T03:37:03.065Z] [unzip] Processing entry: client\assets\img\
+[debug] [2026-04-24T03:37:03.065Z] [unzip] mkdir: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\assets\img\
+[debug] [2026-04-24T03:37:03.065Z] [unzip] Entry: client/assets/img/database.png (compressed_size=29449 bytes, uncompressed_size=29988 bytes)
+[debug] [2026-04-24T03:37:03.065Z] [unzip] Processing entry: client\assets\img\database.png
+[debug] [2026-04-24T03:37:03.065Z] [unzip] else mkdir: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\assets\img
+[debug] [2026-04-24T03:37:03.066Z] [unzip] deflating: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\assets\img\database.png
+[debug] [2026-04-24T03:37:03.066Z] [unzip] Entry: client/assets/provider-icons/ (compressed_size=0 bytes, uncompressed_size=0 bytes)
+[debug] [2026-04-24T03:37:03.066Z] [unzip] Processing entry: client\assets\provider-icons\
+[debug] [2026-04-24T03:37:03.066Z] [unzip] mkdir: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons\
+[debug] [2026-04-24T03:37:03.066Z] [unzip] Entry: client/assets/provider-icons/auth_service_saml.svg (compressed_size=575 bytes, uncompressed_size=1226 bytes)
+[debug] [2026-04-24T03:37:03.067Z] [unzip] Processing entry: client\assets\provider-icons\auth_service_saml.svg
+[debug] [2026-04-24T03:37:03.067Z] [unzip] else mkdir: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons
+[debug] [2026-04-24T03:37:03.067Z] [unzip] deflating: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons\auth_service_saml.svg
+[debug] [2026-04-24T03:37:03.067Z] [unzip] Entry: client/assets/provider-icons/auth_service_phone.svg (compressed_size=261 bytes, uncompressed_size=414 bytes)
+[debug] [2026-04-24T03:37:03.067Z] [unzip] Processing entry: client\assets\provider-icons\auth_service_phone.svg
+[debug] [2026-04-24T03:37:03.067Z] [unzip] else mkdir: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons
+[debug] [2026-04-24T03:37:03.068Z] [unzip] deflating: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons\auth_service_phone.svg
+[debug] [2026-04-24T03:37:03.068Z] [unzip] Entry: client/assets/provider-icons/auth_service_facebook.svg (compressed_size=289 bytes, uncompressed_size=457 bytes)
+[debug] [2026-04-24T03:37:03.068Z] [unzip] Processing entry: client\assets\provider-icons\auth_service_facebook.svg
+[debug] [2026-04-24T03:37:03.068Z] [unzip] else mkdir: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons
+[debug] [2026-04-24T03:37:03.068Z] [unzip] deflating: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons\auth_service_facebook.svg
+[debug] [2026-04-24T03:37:03.069Z] [unzip] Entry: client/assets/provider-icons/auth_service_game_center.svg (compressed_size=991 bytes, uncompressed_size=3921 bytes)
+[debug] [2026-04-24T03:37:03.069Z] [unzip] Processing entry: client\assets\provider-icons\auth_service_game_center.svg
+[debug] [2026-04-24T03:37:03.069Z] [unzip] else mkdir: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons
+[debug] [2026-04-24T03:37:03.069Z] [unzip] deflating: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons\auth_service_game_center.svg
+[debug] [2026-04-24T03:37:03.070Z] [unzip] Entry: client/assets/provider-icons/auth_service_apple.svg (compressed_size=230 bytes, uncompressed_size=334 bytes)
+[debug] [2026-04-24T03:37:03.070Z] [unzip] Processing entry: client\assets\provider-icons\auth_service_apple.svg
+[debug] [2026-04-24T03:37:03.070Z] [unzip] else mkdir: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons
+[debug] [2026-04-24T03:37:03.070Z] [unzip] deflating: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons\auth_service_apple.svg
+[debug] [2026-04-24T03:37:03.071Z] [unzip] Entry: client/assets/provider-icons/auth_service_github.svg (compressed_size=466 bytes, uncompressed_size=838 bytes)
+[debug] [2026-04-24T03:37:03.071Z] [unzip] Processing entry: client\assets\provider-icons\auth_service_github.svg
+[debug] [2026-04-24T03:37:03.071Z] [unzip] else mkdir: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons
+[debug] [2026-04-24T03:37:03.071Z] [unzip] deflating: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons\auth_service_github.svg
+[debug] [2026-04-24T03:37:03.071Z] [unzip] Entry: client/assets/provider-icons/auth_service_mslive.svg (compressed_size=203 bytes, uncompressed_size=378 bytes)
+[debug] [2026-04-24T03:37:03.071Z] [unzip] Processing entry: client\assets\provider-icons\auth_service_mslive.svg
+[debug] [2026-04-24T03:37:03.071Z] [unzip] else mkdir: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons
+[debug] [2026-04-24T03:37:03.072Z] [unzip] deflating: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons\auth_service_mslive.svg
+[debug] [2026-04-24T03:37:03.072Z] [unzip] Entry: client/assets/provider-icons/auth_service_yahoo.svg (compressed_size=577 bytes, uncompressed_size=1182 bytes)
+[debug] [2026-04-24T03:37:03.072Z] [unzip] Processing entry: client\assets\provider-icons\auth_service_yahoo.svg
+[debug] [2026-04-24T03:37:03.072Z] [unzip] else mkdir: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons
+[debug] [2026-04-24T03:37:03.072Z] [unzip] deflating: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons\auth_service_yahoo.svg
+[debug] [2026-04-24T03:37:03.073Z] [unzip] Entry: client/assets/provider-icons/auth_service_twitter.svg (compressed_size=444 bytes, uncompressed_size=751 bytes)
+[debug] [2026-04-24T03:37:03.073Z] [unzip] Processing entry: client\assets\provider-icons\auth_service_twitter.svg
+[debug] [2026-04-24T03:37:03.073Z] [unzip] else mkdir: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons
+[debug] [2026-04-24T03:37:03.073Z] [unzip] deflating: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons\auth_service_twitter.svg
+[debug] [2026-04-24T03:37:03.074Z] [unzip] Entry: client/assets/provider-icons/auth_service_play_games.svg (compressed_size=565 bytes, uncompressed_size=1173 bytes)
+[debug] [2026-04-24T03:37:03.074Z] [unzip] Processing entry: client\assets\provider-icons\auth_service_play_games.svg
+[debug] [2026-04-24T03:37:03.074Z] [unzip] else mkdir: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons
+[debug] [2026-04-24T03:37:03.074Z] [unzip] deflating: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons\auth_service_play_games.svg
+[debug] [2026-04-24T03:37:03.075Z] [unzip] Entry: client/assets/provider-icons/auth_service_email.svg (compressed_size=228 bytes, uncompressed_size=326 bytes)
+[debug] [2026-04-24T03:37:03.075Z] [unzip] Processing entry: client\assets\provider-icons\auth_service_email.svg
+[debug] [2026-04-24T03:37:03.075Z] [unzip] else mkdir: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons
+[debug] [2026-04-24T03:37:03.075Z] [unzip] deflating: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons\auth_service_email.svg
+[debug] [2026-04-24T03:37:03.075Z] [unzip] Entry: client/assets/provider-icons/auth_service_google.svg (compressed_size=409 bytes, uncompressed_size=720 bytes)
+[debug] [2026-04-24T03:37:03.076Z] [unzip] Processing entry: client\assets\provider-icons\auth_service_google.svg
+[debug] [2026-04-24T03:37:03.076Z] [unzip] else mkdir: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons
+[debug] [2026-04-24T03:37:03.076Z] [unzip] deflating: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons\auth_service_google.svg
+[debug] [2026-04-24T03:37:03.076Z] [unzip] Entry: client/assets/provider-icons/auth_service_oidc.svg (compressed_size=414 bytes, uncompressed_size=858 bytes)
+[debug] [2026-04-24T03:37:03.076Z] [unzip] Processing entry: client\assets\provider-icons\auth_service_oidc.svg
+[debug] [2026-04-24T03:37:03.076Z] [unzip] else mkdir: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons
+[debug] [2026-04-24T03:37:03.077Z] [unzip] deflating: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\assets\provider-icons\auth_service_oidc.svg
+[debug] [2026-04-24T03:37:03.077Z] [unzip] Entry: client/browserconfig.xml (compressed_size=491 bytes, uncompressed_size=822 bytes)
+[debug] [2026-04-24T03:37:03.077Z] [unzip] Processing entry: client\browserconfig.xml
+[debug] [2026-04-24T03:37:03.077Z] [unzip] else mkdir: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client
+[debug] [2026-04-24T03:37:03.078Z] [unzip] deflating: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\browserconfig.xml
+[debug] [2026-04-24T03:37:03.078Z] [unzip] Entry: client/favicon-32x32.png (compressed_size=475 bytes, uncompressed_size=475 bytes)
+[debug] [2026-04-24T03:37:03.078Z] [unzip] Processing entry: client\favicon-32x32.png
+[debug] [2026-04-24T03:37:03.078Z] [unzip] else mkdir: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client
+[debug] [2026-04-24T03:37:03.078Z] [unzip] Writing file: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\client\favicon-32x32.png
+[debug] [2026-04-24T03:37:03.079Z] [unzip] Entry: server/ (compressed_size=0 bytes, uncompressed_size=0 bytes)
+[debug] [2026-04-24T03:37:03.079Z] [unzip] Processing entry: server\
+[debug] [2026-04-24T03:37:03.079Z] [unzip] mkdir: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\server\
+[debug] [2026-04-24T03:37:03.079Z] [unzip] Entry: server/server.mjs.map (compressed_size=217845 bytes, uncompressed_size=944978 bytes)
+[debug] [2026-04-24T03:37:03.079Z] [unzip] Processing entry: server\server.mjs.map
+[debug] [2026-04-24T03:37:03.079Z] [unzip] else mkdir: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\server
+[debug] [2026-04-24T03:37:03.079Z] [unzip] deflating: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\server\server.mjs.map
+[debug] [2026-04-24T03:37:03.083Z] [unzip] Entry: server/server.mjs (compressed_size=276407 bytes, uncompressed_size=933701 bytes)
+[debug] [2026-04-24T03:37:03.083Z] [unzip] Processing entry: server\server.mjs
+[debug] [2026-04-24T03:37:03.083Z] [unzip] else mkdir: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\server
+[debug] [2026-04-24T03:37:03.083Z] [unzip] deflating: C:\Users\Eden\.cache\firebase\emulators\ui-v1.15.0\server\server.mjs
+[debug] [2026-04-24T03:37:03.088Z] [Extensions] Connecting Extensions emulator, this is a noop.
+[info] i  functions: Watching "C:\Users\Eden\OneDrive\Desktop\Lynkfi test\Cursorfp\functions" for Cloud Functions... {"metadata":{"emulator":{"name":"functions"},"message":"Watching \"C:\\Users\\Eden\\OneDrive\\Desktop\\Lynkfi test\\Cursorfp\\functions\" for Cloud Functions..."}}
+[debug] [2026-04-24T03:37:03.089Z] Customer code is not Node
+[debug] [2026-04-24T03:37:03.090Z] Validating python source
+[debug] [2026-04-24T03:37:03.090Z] Building python source
+[debug] [2026-04-24T03:37:03.090Z] Could not find functions.yaml. Must use http discovery
+[debug] [2026-04-24T03:37:03.095Z] Running command with virtualenv: command="C:\Users\Eden\OneDrive\Desktop\Lynkfi test\Cursorfp\functions\venv\Scripts\activate.bat", args=["","&&","python.exe","-c","\"import firebase_functions; import os; print(os.path.dirname(firebase_functions.__file__))\""]
+[debug] [2026-04-24T03:37:03.199Z] stdout: C:\Users\Eden\OneDrive\Desktop\Lynkfi test\Cursorfp\functions\venv\Lib\site-packages\firebase_functions
+
+[debug] [2026-04-24T03:37:03.204Z] Running admin server with args: ["python.exe","\"C:\\Users\\Eden\\OneDrive\\Desktop\\Lynkfi test\\Cursorfp\\functions\\venv\\Lib\\site-packages\\firebase_functions\\private\\serving.py\""] and env: {"GCLOUD_PROJECT":"lynkfiprod","K_REVISION":"1","PORT":"80","GOOGLE_CLOUD_QUOTA_PROJECT":"lynkfiprod","FUNCTIONS_EMULATOR":"true","TZ":"UTC","FIREBASE_DEBUG_MODE":"true","FIREBASE_DEBUG_FEATURES":"{\"skipTokenVerification\":true,\"enableCors\":true}","FIREBASE_EMULATOR_HUB":"127.0.0.1:4400","CLOUD_EVENTARC_EMULATOR_HOST":"http://127.0.0.1:9299","CLOUD_TASKS_EMULATOR_HOST":"127.0.0.1:9499","FIREBASE_CONFIG":"{\"storageBucket\":\"lynkfiprod.firebasestorage.app\",\"projectId\":\"lynkfiprod\"}","GOOGLE_APPLICATION_CREDENTIALS":"C:\\Users\\Eden\\AppData\\Roaming\\firebase\\eden0fong065_gmail_com_application_default_credentials.json","ADMIN_PORT":"8081"} in C:\Users\Eden\OneDrive\Desktop\Lynkfi test\Cursorfp\functions
+[debug] [2026-04-24T03:37:03.204Z] Running command with virtualenv: command="C:\Users\Eden\OneDrive\Desktop\Lynkfi test\Cursorfp\functions\venv\Scripts\activate.bat", args=["","&&","python.exe","\"C:\\Users\\Eden\\OneDrive\\Desktop\\Lynkfi test\\Cursorfp\\functions\\venv\\Lib\\site-packages\\firebase_functions\\private\\serving.py\""]
+[info]  * Serving Flask app 'serving'
+ * Debug mode: off
+
+[error] WARNING: This is a development server. Do not use it in a production deployment. Use a production WSGI server instead.
+ * Running on http://127.0.0.1:8081
+
+[error] Press CTRL+C to quit
+
+[error] 127.0.0.1 - - [24/Apr/2026 03:37:04] "GET /__/functions.yaml HTTP/1.1" 200 -
+
+[debug] [2026-04-24T03:37:04.476Z] Got response from /__/functions.yaml endpoints:
+  on_request_example:
+    availableMemoryMb: null
+    concurrency: null
+    cpu: gcf_gen1
+    entryPoint: on_request_example
+    httpsTrigger: {}
+    ingressSettings: null
+    labels: {}
+    maxInstances: 10
+    minInstances: null
+    platform: gcfv2
+    secretEnvironmentVariables: []
+    serviceAccountEmail: null
+    timeoutSeconds: null
+params: []
+requiredAPIs: []
+specVersion: v1alpha1
+
+[error] 127.0.0.1 - - [24/Apr/2026 03:37:04] "GET /__/quitquitquit HTTP/1.1" 200 -
+
+[info] +  functions: Loaded functions definitions from source: on_request_example. {"metadata":{"emulator":{"name":"functions"},"message":"Loaded functions definitions from source: on_request_example."}}
+[info] +  functions[us-central1-on_request_example]: http function initialized (http://127.0.0.1:5001/lynkfiprod/us-central1/on_request_example). {"metadata":{"emulator":{"name":"functions"},"message":"\u001b[1mhttp\u001b[22m function initialized (http://127.0.0.1:5001/lynkfiprod/us-central1/on_request_example)."}}
+[debug] [2026-04-24T03:37:04.497Z] Could not find VSCode notification endpoint: FetchError: request to http://localhost:40001/vscode/notify failed, reason: . If you are not running the Firebase SQL Connect VSCode extension, this is expected and not an issue.
+[info] 
+┌─────────────────────────────────────────────────────────────┐
+│ ✔  All emulators ready! It is now safe to connect your app. │
+│ i  View Emulator UI at http://127.0.0.1:4000/               │
+└─────────────────────────────────────────────────────────────┘
+
+┌────────────┬────────────────┬──────────────────────────────────┐
+│ Emulator   │ Host:Port      │ View in Emulator UI              │
+├────────────┼────────────────┼──────────────────────────────────┤
+│ Functions  │ 127.0.0.1:5001 │ http://127.0.0.1:4000/functions  │
+├────────────┼────────────────┼──────────────────────────────────┤
+│ Hosting    │ 127.0.0.1:5000 │ n/a                              │
+├────────────┼────────────────┼──────────────────────────────────┤
+│ Extensions │ 127.0.0.1:5001 │ http://127.0.0.1:4000/extensions │
+└────────────┴────────────────┴──────────────────────────────────┘
+  Emulator Hub host: 127.0.0.1 port: 4400
+  Other reserved ports: 4500
+┌─────────────────────────┬───────────────┬─────────────────────┐
+│ Extension Instance Name │ Extension Ref │ View in Emulator UI │
+└─────────────────────────┴───────────────┴─────────────────────┘
+Issues? Report them at https://github.com/firebase/firebase-tools/issues and attach the *-debug.log files.
+ 

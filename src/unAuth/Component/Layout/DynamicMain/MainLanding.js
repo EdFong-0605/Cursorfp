@@ -1,4 +1,4 @@
-/** Primary main content region between SearchBar and Footer on the landing layout. */
+/** Primary main content region between TopRibbon and Footer on the landing layout. */
 import './MainLanding.css';
 
 function MainLanding() {

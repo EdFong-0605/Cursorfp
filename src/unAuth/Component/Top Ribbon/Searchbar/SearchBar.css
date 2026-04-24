@@ -1,21 +1,4 @@
-/* Same vertical rhythm as .navbar-sheet__top (150px); continues the black header band. */
-
-.searchbar-sheet {
-  box-sizing: border-box;
-  width: 100%;
-  flex-shrink: 0;
-  height: 150px;
-  min-height: 150px;
-  max-height: 150px;
-  background-color: #000000;
-  /* Accent line lives on MainLanding + nav body-right so the seam aligns (no double line here). */
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 14px 24px;
-}
-
-.searchbar-sheet__form {
+.searchbar__form {
   box-sizing: border-box;
   width: 100%;
   max-width: 42rem;
@@ -30,7 +13,7 @@
 
 /* Visually hidden but read by screen readers (input still has visible placeholder). */
 
-.searchbar-sheet__label {
+.searchbar__label {
   position: absolute;
   width: 1px;
   height: 1px;
@@ -42,7 +25,7 @@
   border: 0;
 }
 
-.searchbar-sheet__input {
+.searchbar__input {
   box-sizing: border-box;
   flex: 1 1 auto;
   min-width: 0;
@@ -50,8 +33,9 @@
   margin: 0;
   padding: 0 1rem;
   border: 3px solid #7f93a8;
+  border-left-width: 0;
   border-right-width: 0;
-  border-radius: var(--searchbar-radius) 0 0 var(--searchbar-radius);
+  border-radius: 0;
   background-color: #161b22;
   color: #e6edf3;
   font-size: 1rem;
@@ -60,24 +44,26 @@
   box-shadow: inset 0 3px 0 #2b3a49;
 }
 
-.searchbar-sheet__input::placeholder {
+.searchbar__input::placeholder {
   color: rgba(230, 237, 243, 0.45);
 }
 
-.searchbar-sheet__input:hover {
+/* Hover only when not focused so “ready to type” stays the lighter fill. */
+.searchbar__input:hover:not(:focus) {
   background-color: #0d1218;
 }
 
-.searchbar-sheet__input:active {
+.searchbar__input:focus,
+.searchbar__input:focus-visible {
+  outline: none;
   background-color: #1e2635;
 }
 
-.searchbar-sheet__input:focus,
-.searchbar-sheet__input:focus-visible {
-  outline: none;
+.searchbar__input:active {
+  background-color: #1e2635;
 }
 
-.searchbar-sheet__submit {
+.searchbar__submit {
   box-sizing: border-box;
   flex: 0 0 3rem;
   width: 3rem;
@@ -89,8 +75,8 @@
   align-items: center;
   justify-content: center;
   border: 3px solid #7f93a8;
-  border-right-width: 0;
-  border-radius: 0;
+  border-left-width: 0;
+  border-radius: 0 var(--searchbar-radius) var(--searchbar-radius) 0;
   background-color: #161b22;
   background-image: none;
   color: #e6edf3;
@@ -102,21 +88,21 @@
   box-shadow: inset 0 3px 0 #2b3a49;
 }
 
-.searchbar-sheet__submit:hover {
+.searchbar__submit:hover {
   background-color: #0d1218;
 }
 
-.searchbar-sheet__submit:focus,
-.searchbar-sheet__submit:focus-visible {
+.searchbar__submit:focus,
+.searchbar__submit:focus-visible {
   outline: none;
 }
 
-.searchbar-sheet__submit:active {
+.searchbar__submit:active {
   background-color: #0a0f15;
   background-image: none;
 }
 
-.searchbar-sheet__client {
+.searchbar__client {
   box-sizing: border-box;
   flex: 0 1 13.5rem;
   min-width: 9rem;
@@ -125,7 +111,8 @@
   margin: 0;
   padding: 0 2.25rem 0 0.75rem;
   border: 3px solid #7f93a8;
-  border-radius: 0 var(--searchbar-radius) var(--searchbar-radius) 0;
+  border-right-width: 0;
+  border-radius: var(--searchbar-radius) 0 0 var(--searchbar-radius);
   background-color: #161b22;
   color: #e6edf3;
   font-size: 0.9rem;
@@ -141,16 +128,16 @@
   background-size: 12px 12px;
 }
 
-.searchbar-sheet__client:hover {
+.searchbar__client:hover {
   background-color: #0d1218;
 }
 
-.searchbar-sheet__client:focus,
-.searchbar-sheet__client:focus-visible {
+.searchbar__client:focus,
+.searchbar__client:focus-visible {
   outline: none;
 }
 
-.searchbar-sheet__client option {
+.searchbar__client option {
   background-color: #161b22;
   color: #e6edf3;
 }

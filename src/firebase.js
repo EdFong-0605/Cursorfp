@@ -1,6 +1,7 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
+import { getFunctions, connectFunctionsEmulator } from "firebase/functions";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
 
@@ -27,3 +28,19 @@ console.log("[Firebase] REACT_APP_FIREBASE_MEASUREMENT_ID", process.env.REACT_AP
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
+
+// Connect to Functions emulator if in local development
+if (
+  window.location.hostname === "localhost" || 
+  process.env.react_app_env === "local"
+) {
+  connectFunctionsEmulator(functions, "localhost", 5001);
+}
+ // export whatever you need elsewhere  
+
+export { 
+  app,
+  analytics,
+  functions
+  //plus any other exports you need elsewhere
+};

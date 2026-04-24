@@ -1,4 +1,10 @@
 {
+  "functions": [
+    {
+      "source": "functions",
+      "codebase": "default"
+    }
+  ],
   "hosting": {
     "public": "build",
     "ignore": [
@@ -14,3 +20,6 @@
     ]
   }
 }
+
+
+/** remember to add the nesseary parts of firebase to the file **/

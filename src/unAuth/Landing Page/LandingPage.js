@@ -4,7 +4,7 @@
  */
 import './LandingPage.css';
 import NavBar from '../Component/Layout/NavBar';
-import SearchBar from '../Component/Layout/SearchBar';
+import TopRibbon from '../Component/Top Ribbon/TopRibbon';
 import MainLanding from '../Component/Layout/DynamicMain/MainLanding';
 import Footer from '../Component/Layout/Footer';
 
@@ -13,7 +13,7 @@ function LandingPage() {
     <div className="landing-page">
       <NavBar />
       <div className="landing-page__content">
-        <SearchBar />
+        <TopRibbon />
         <MainLanding />
         <Footer />
       </div>
