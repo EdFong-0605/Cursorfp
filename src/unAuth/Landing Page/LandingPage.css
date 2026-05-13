@@ -8,6 +8,14 @@
   width: 100%;
 }
 
+/* Very narrow screens only: stack NavBar above content (see NavBar.css @media). 480px keeps split layout for split windows / small tablets. */
+@media (max-width: 480px) {
+  .landing-page {
+    flex-direction: column;
+    align-items: stretch;
+  }
+}
+
 /* Main column beside NavBar; flex child grows horizontally. */
 
 .landing-page__content {

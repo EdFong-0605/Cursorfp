@@ -1,6 +1,6 @@
 /** Black header band below the NavBar logo row; hosts the site search control. */
 import './TopRibbon.css';
-import SearchBar from './Searchbar/SearchBar';
+import SearchBar from '../2.1 SearchBar/SearchBar';
 
 /**
  * @param {object} props — forwarded to SearchBar

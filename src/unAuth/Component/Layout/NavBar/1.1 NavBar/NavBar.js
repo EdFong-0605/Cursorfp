@@ -1,6 +1,8 @@
 /**
  * Left sidebar: top band, then a row with a narrow left strip and the interactive nav.
  * Right column: buttons 1–4 grouped at the top, 5–6 at the bottom (see NavBar.css).
+ * Layout scales with viewport (fluid widths and icon sizes); under 480px the shell becomes
+ * a full-width horizontal strip so very narrow phones do not keep a narrow side column.
  */
 
 import './NavBar.css';
@@ -23,9 +25,17 @@ function Button({ children, className = '', type = 'button', ...rest }) {
   );
 }
 
-function NavBar() {
+/**
+ * @param {object} props
+ * @param {{ id: string, label: string }[]} [props.clients] — shared list from `LandingPage` (same fetch as SearchBar).
+ */
+function NavBar({ clients = [] }) {
   return (
-    <header className="navbar-sheet" role="banner">
+    <header
+      className="navbar-sheet"
+      role="banner"
+      data-clients-loaded={clients.length}
+    >
       {/* Fixed-height header band (decorative / branding area) */}
       <div className="navbar-sheet__top">
         <img

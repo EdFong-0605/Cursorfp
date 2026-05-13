@@ -1,34 +1,46 @@
-/* Sidebar shell: full-height column; sticky on scroll. */
+/* Sidebar shell: full-height column; sticky on scroll.
+   Sizes use CSS variables so one place controls scaling across breakpoints. */
 
 .navbar-sheet {
-  flex: 0 0 175px;
+  /* --nav-total: full sidebar width; shrinks on smaller viewports (clamp = min, preferred, max). */
+  --nav-total: clamp(112px, 18vw, 175px);
+  /* --nav-top: black logo band height. */
+  --nav-top: clamp(72px, 12vh, 150px);
+  /* --nav-strip: narrow black strip beside the button column. */
+  --nav-strip: clamp(18px, 3.5vw, 35px);
+  /* --nav-col: dark column for buttons (remainder of total minus strip). */
+  --nav-col: max(calc(var(--nav-total) - var(--nav-strip)), 78px);
+
+  flex: 0 0 var(--nav-total);
   flex-shrink: 0;
-  width: 175px;
-  min-width: 175px;
+  width: var(--nav-total);
+  min-width: min(var(--nav-total), 100%);
   align-self: flex-start;
   height: 100vh;
   min-height: 100vh;
+  min-height: 100dvh;
   position: sticky;
   top: 0;
   display: flex;
   flex-direction: column;
+  box-sizing: border-box;
 }
 
 .navbar-sheet__top {
-  flex: 0 0 150px;
+  flex: 0 0 var(--nav-top);
   width: 100%;
   background-color: #000000;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 14px 10px;
+  padding: clamp(6px, 1.2vw, 14px) clamp(6px, 1vw, 10px);
   box-sizing: border-box;
 }
 
 .navbar-sheet__logo {
   display: block;
   width: 100%;
-  max-width: 150px;
+  max-width: min(150px, 85%);
   height: auto;
   object-fit: contain;
 }
@@ -41,14 +53,14 @@
 }
 
 .navbar-sheet__body-left {
-  flex: 0 0 35px;
+  flex: 0 0 var(--nav-strip);
   min-width: 0;
   background-color: #000000;
 }
 
 .navbar-sheet__body-right {
   box-sizing: border-box;
-  flex: 0 0 140px;
+  flex: 0 0 var(--nav-col);
   min-width: 0;
   background-color: #161b22;
   /* Top accent only on the nav column — avoids a horizontal “tail” left of the 35px strip. */
@@ -62,18 +74,27 @@
   gap: 0;
 }
 
-.navbar-sheet__right-top,
-.navbar-sheet__right-bottom {
+/* [NavBar.js] Top block of icon buttons: class navbar-sheet__body-right-top (see also .navbar-sheet__right-top legacy). */
+.navbar-sheet__body-right-top,
+.navbar-sheet__right-top {
   display: flex;
   flex-direction: column;
-  gap: 0px;
-  margin-top: auto;
+  gap: 0;
+}
+
+.navbar-sheet__body-right-top {
+  flex: 1 1 auto;
+  min-height: 0;
 }
 
 .navbar-sheet__right-bottom {
+  display: flex;
+  flex-direction: column;
   position: relative;
-  padding-top: 18px;
-  gap: 30px;
+  padding-top: clamp(10px, 2vh, 18px);
+  gap: clamp(12px, 3vh, 30px);
+  margin-top: auto;
+  flex-shrink: 0;
 }
 
 .navbar-sheet__right-bottom::before {
@@ -82,7 +103,7 @@
   top: -40px;
   left: 50%;
   transform: translateX(-50%);
-  width: 75px;
+  width: min(75px, 70%);
   height: 1px;
   background-color: rgba(111, 131, 152, 0.3);
   border-radius: 1px;
@@ -115,7 +136,7 @@
   /* this is for the cursor of the button */
   cursor: pointer;  
   /* this is for the font size of the button (can also change how big the icon is) */
-  font-size: 3rem;
+  font-size: clamp(1.35rem, 4.2vw, 3rem);
   /* this is for the transition of the button */
   transition: background-color 120ms ease, background 120ms ease,
     box-shadow 120ms ease, transform 120ms ease;
@@ -153,11 +174,11 @@
 /* this is for the profile button */
 
 .btn-profile {
-  width: 50px;
-  height: 50px;
+  width: clamp(38px, 10vw, 50px);
+  height: clamp(38px, 10vw, 50px);
   margin: 0 auto;
   position: relative;
-  top: -20px;
+  top: clamp(-14px, -2.5vw, -20px);
   padding: 0;
   border: none;
   outline: none;
@@ -195,7 +216,7 @@
   height: auto;
   margin: 0 auto;
   position: relative;
-  top: -20px;
+  top: clamp(-14px, -2.5vw, -20px);
   padding: 0;
   aspect-ratio: 1;
   align-items: center;
@@ -205,7 +226,7 @@
   border-radius: 0;
   background-color: transparent;
   color: #e6edf3;
-  font-size: 2rem;
+  font-size: clamp(1.1rem, 3vw, 2rem);
   line-height: 1;
   cursor: pointer;
   appearance: none;
@@ -227,5 +248,85 @@
 .btn-setting:active {
   background-color: transparent;
   transform: translateY(1px) scale(0.96);
+}
+
+/* [LandingPage.css] Below 480px the page is a column; the bar becomes a full-width horizontal strip. */
+@media (max-width: 480px) {
+  .navbar-sheet {
+    flex: 0 0 auto;
+    width: 100%;
+    min-width: 0;
+    max-width: none;
+    height: auto;
+    min-height: 0;
+    flex-direction: row;
+    align-self: stretch;
+    z-index: 20;
+  }
+
+  .navbar-sheet__top {
+    flex: 0 0 clamp(56px, 16vw, 88px);
+    width: auto;
+    align-self: stretch;
+    min-height: 0;
+  }
+
+  .navbar-sheet__body {
+    flex: 1 1 auto;
+    min-height: clamp(52px, 12vw, 68px);
+  }
+
+  .navbar-sheet__body-left {
+    flex: 0 0 clamp(8px, 2vw, 18px);
+  }
+
+  .navbar-sheet__body-right {
+    flex: 1 1 auto;
+    flex-direction: row;
+    align-items: stretch;
+    justify-content: flex-start;
+    border-top: none;
+    border-left: 3px solid #7f93a8;
+    box-shadow: inset 3px 0 0 #2b3a49;
+  }
+
+  .navbar-sheet__body-right-top {
+    flex-direction: row;
+    flex: 1 1 auto;
+    min-width: 0;
+    align-items: stretch;
+  }
+
+  .navbar-sheet__body-right-top .btn-square-main {
+    flex: 1 1 0;
+    min-width: 0;
+    width: auto;
+    min-height: 0;
+    max-width: min(22vw, 4.5rem);
+    max-height: min(22vw, 4.5rem);
+    margin: auto 0;
+    align-self: center;
+  }
+
+  .navbar-sheet__right-bottom {
+    flex-direction: column;
+    margin-top: 0;
+    padding-top: 0;
+    gap: 2px;
+    justify-content: center;
+    flex: 0 0 auto;
+    align-items: center;
+    min-width: clamp(44px, 12vw, 56px);
+  }
+
+  .navbar-sheet__right-bottom::before {
+    display: none;
+  }
+
+  .navbar-sheet__right-bottom .btn-setting,
+  .navbar-sheet__right-bottom .btn-profile {
+    top: 0;
+    margin: 0;
+  }
 }
 

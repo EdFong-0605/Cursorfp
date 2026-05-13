@@ -1,0 +1,179 @@
+/* Left rail: flat cards; selected card gets blue gradient “light up”; chevron thickens when selected. */
+
+.client-bar {
+  box-sizing: border-box;
+  flex: 0 0 clamp(148px, 22%, 300px);
+  width: clamp(148px, 22%, 300px);
+  min-width: 0;
+  background-color: #161b22;
+  border-right: 1px solid #2b3a49;
+  display: flex;
+  flex-direction: column;
+  padding: 10px 8px 12px;
+  overflow: hidden;
+}
+
+.client-bar__head {
+  flex-shrink: 0;
+  padding: 4px 6px 10px;
+  border-bottom: 1px solid rgba(43, 58, 73, 0.85);
+  margin-bottom: 10px;
+}
+
+.client-bar__title {
+  margin: 0;
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #8b9cb3;
+}
+
+.client-bar__empty {
+  margin: 0;
+  padding: 8px 6px;
+  font-size: 0.8rem;
+  color: #8b9cb3;
+  line-height: 1.35;
+}
+
+.client-bar__list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  overflow-y: auto;
+  overflow-x: hidden;
+  min-height: 0;
+  flex: 1 1 auto;
+}
+
+.client-bar__item {
+  margin: 0;
+  padding: 0;
+}
+
+/* Flat card: text block + chevron row; left accent via border when active. */
+.client-bar__card {
+  width: 100%;
+  margin: 0;
+  padding: 10px 8px 10px 10px;
+  border: 1px solid rgba(43, 58, 73, 0.95);
+  border-left: 3px solid transparent;
+  border-radius: 10px;
+  background-color: #1c2128;
+  color: #e6edf3;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 6px;
+  transition:
+    border-color 0.18s ease,
+    background 0.22s ease,
+    background-color 0.22s ease;
+}
+
+.client-bar__card:hover:not(.client-bar__card--active) {
+  border-color: rgba(127, 147, 168, 0.5);
+  background-color: #222831;
+}
+
+.client-bar__card:focus-visible {
+  outline: 2px solid #58a6ff;
+  outline-offset: 2px;
+}
+
+/* Selected: blue frame + left bar + soft blue “light-up” gradient across the card. */
+.client-bar__card--active {
+  border-color: rgba(88, 166, 255, 0.65);
+  border-left-color: #58a6ff;
+  background-color: #1c2128;
+  background-image: linear-gradient(
+    105deg,
+    rgba(88, 166, 255, 0.13) 0%,
+    rgba(88, 166, 255, 0.05) 42%,
+    rgba(28, 33, 40, 0.55) 70%,
+    #1c2128 100%
+  );
+}
+
+/* Brighter, thicker chevron when this card is selected. */
+.client-bar__card--active .client-bar__card-chevron {
+  color: #d8eaff;
+  opacity: 1;
+}
+
+.client-bar__card-main {
+  flex: 1 1 auto;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  gap: 5px;
+}
+
+.client-bar__card-chevron {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #7d8a9b;
+  opacity: 0.9;
+}
+
+.client-bar__card-chevron-svg {
+  display: block;
+}
+
+.client-bar__card-chevron-svg path {
+  stroke-width: 2px;
+  vector-effect: non-scaling-stroke;
+}
+
+.client-bar__card--active .client-bar__card-chevron-svg path {
+  stroke-width: 2.85px;
+}
+
+.client-bar__card-name {
+  display: block;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.25;
+  color: #f0f4f8;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.client-bar__card-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px 6px;
+  font-size: 0.6875rem;
+  line-height: 1.3;
+}
+
+.client-bar__card-aum {
+  font-weight: 600;
+  font-variant-numeric: tabular-nums;
+  color: #7dd3fc;
+}
+
+.client-bar__card-sep {
+  color: rgba(139, 156, 179, 0.65);
+  user-select: none;
+}
+
+.client-bar__card-date {
+  font-weight: 500;
+  color: #8b9cb3;
+  font-variant-numeric: tabular-nums;
+}
