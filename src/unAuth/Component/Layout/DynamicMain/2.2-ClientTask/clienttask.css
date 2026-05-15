@@ -1,6 +1,6 @@
-/* One horizontal band: Clientbar + white body (matches task row layout). */
+/* One horizontal band: Clientbar + white body. */
 
-.progress-bar-panel {
+.client-task-panel {
   box-sizing: border-box;
   flex: 1 1 50%;
   min-height: 0;
@@ -10,7 +10,7 @@
   overflow: hidden;
 }
 
-.progress-bar-panel__body {
+.client-task-panel__body {
   flex: 1 1 auto;
   min-width: 0;
   box-sizing: border-box;
@@ -21,13 +21,13 @@
   padding: 16px;
 }
 
-.progress-bar-panel__title {
+.client-task-panel__title {
   font-size: 1rem;
   font-weight: 600;
   color: #000;
 }
 
-.progress-bar-panel__meta {
+.client-task-panel__meta {
   font-size: 1rem;
   font-weight: 400;
   color: #333;
