@@ -36,6 +36,9 @@ function Button({ children, className = '', type = 'button', ...rest }) {
  * @param {boolean} [props.progressPanelOpen] — true when main column is `MainLanding` with client tasks off (for `aria-pressed` on the bars-progress icon).
  * @param {() => void} [props.onClipboardIconClick] — shows `TaskEdit.js` in the main column; wired from `LandingPage` (sets mode on, same idea as progress — not a tap-to-toggle-off control).
  * @param {boolean} [props.clipboardPanelOpen] — true when main column is `TaskEdit` (for `aria-pressed` on the clipboard icon).
+ * @param {string} [props.profileInitials] — one or two letters shown on the round profile control (from the signed-in user).
+ * @param {() => void} [props.onProfileClick] — signs the user out; wired from [LandingPage.js] via [AuthContext.js].
+ * @param {boolean} [props.profileBusy] — disables the profile control while sign-out is in progress.
  */
 function NavBar({
   clients = [],
@@ -47,6 +50,9 @@ function NavBar({
   progressPanelOpen = false,
   onClipboardIconClick = () => {},
   clipboardPanelOpen = false,
+  profileInitials = '?',
+  onProfileClick = () => {},
+  profileBusy = false,
 }) {
   return (
     <header
@@ -114,8 +120,15 @@ function NavBar({
               <FontAwesomeIcon icon={faGear} />
             </Button>
             {/* this is for the profile button HARD CODED EF!! */}
-            <Button type="button" className="btn-profile" aria-label="Profile">
-              EF 
+            <Button
+              type="button"
+              className="btn-profile"
+              aria-label="Log out"
+              title="Log out"
+              onClick={onProfileClick}
+              disabled={profileBusy}
+            >
+              {profileInitials}
             </Button>
           </div>
         </nav>

@@ -1,6 +1,12 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAnalytics } from "firebase/analytics";
+import {
+  getAuth,
+  connectAuthEmulator,
+  setPersistence,
+  browserSessionPersistence,
+} from "firebase/auth";
 import { getFunctions, connectFunctionsEmulator } from "firebase/functions";
 // TODO: Add SDKs for Firebase products that you want to use
 // https://firebase.google.com/docs/web/setup#available-libraries
@@ -28,19 +34,30 @@ console.log("[Firebase] REACT_APP_FIREBASE_MEASUREMENT_ID", process.env.REACT_AP
 // Initialize Firebase
 const app = initializeApp(firebaseConfig);
 const analytics = getAnalytics(app);
+// (Function meaning): `getAuth` creates the sign-in service tied to this Firebase app so other files can log users in or out.
+const auth = getAuth(app);
+// (Function meaning): `setPersistence` with `browserSessionPersistence` keeps you signed in on refresh but clears login when the tab or browser closes (not long-term local storage).
+// (External references): [AuthContext.js] waits for `authPersistenceReady` before `onAuthStateChanged`.
+export const authPersistenceReady = setPersistence(auth, browserSessionPersistence);
+// (Function meaning): `getFunctions` creates the Cloud Functions client so the app can call your Python backend in [functions/main.py].
+const functions = getFunctions(app);
 
-// Connect to Functions emulator if in local development
+// (Function meaning): Emulators only in `npm start` (development), never in `npm run build` / Firebase Hosting — so production uses the same real Auth as the cloud.
+const isLocalDev = process.env.NODE_ENV === "development";
 if (
-  window.location.hostname === "localhost" || 
-  process.env.react_app_env === "local"
+  isLocalDev &&
+  (window.location.hostname === "localhost" || process.env.REACT_APP_ENV === "local")
 ) {
   connectFunctionsEmulator(functions, "localhost", 5001);
 }
- // export whatever you need elsewhere  
+// (Function meaning): Auth emulator only when developing locally AND `.env.development.local` sets REACT_APP_ENV=local.
+if (isLocalDev && process.env.REACT_APP_ENV === "local") {
+  connectAuthEmulator(auth, "http://localhost:9099", { disableWarnings: true });
+}
 
-export { 
+export {
   app,
   analytics,
-  functions
-  //plus any other exports you need elsewhere
+  auth,
+  functions,
 };

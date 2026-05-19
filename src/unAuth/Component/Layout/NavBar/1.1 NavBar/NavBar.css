@@ -210,6 +210,11 @@
   transform: translateY(1px) scale(0.98);
 }
 
+.btn-profile:disabled {
+  opacity: 0.65;
+  cursor: wait;
+}
+
 /* Icon-only control: hit area matches the glyph (no extra padding). */
 .btn-setting {
   width: auto;

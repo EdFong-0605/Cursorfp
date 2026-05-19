@@ -1,0 +1,5 @@
+/* Extra styles for the welcome screen (shared layout lives in authShared.css). */
+
+.login-landing-brand {
+  letter-spacing: 0.04em;
+}

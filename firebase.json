@@ -1,4 +1,13 @@
 {
+  "auth": {
+    "providers": {
+      "emailPassword": true,
+      "googleSignIn": {
+        "oAuthBrandDisplayName": "Lynkfi",
+        "supportEmail": "support@lynkfi.com"
+      }
+    }
+  },
   "functions": [
     {
       "source": "functions",
@@ -20,6 +29,3 @@
     ]
   }
 }
-
-
-/** remember to add the nesseary parts of firebase to the file **/

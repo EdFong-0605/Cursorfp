@@ -1,0 +1,5 @@
+/* Page-specific tweaks for sign-in (optional). */
+
+.login-page .auth-card {
+  max-width: 440px;
+}

@@ -24,30 +24,31 @@ export const DEFAULT_FUNCTIONS_REGION = 'us-central1';
 export const DEFAULT_LOCAL_FIREBASE_PROJECT_ID = 'lynkfiprod';
 
 /**
- * Builds the URL that `fetch` uses to load the client list.
+ * Builds the HTTPS / emulator URL for any callable HTTP Cloud Function by exported name.
  *
- * - **Production:** `https://<region>-<project>.cloudfunctions.net/on_request_example`
- * - **Local (`npm start`):** `http://127.0.0.1:5001/<project>/<region>/on_request_example` (or set `REACT_APP_FUNCTIONS_EMULATOR_ORIGIN`)
- * - **Local + CRA proxy:** set `REACT_APP_USE_RELATIVE_FUNCTIONS_PROXY=true` in `.env` → same path but relative (`/project/...`) so [package.json] `"proxy"` forwards it
+ * - **Production:** `https://<region>-<project>.cloudfunctions.net/<functionName>`
+ * - **Local (`npm start`):** `/<project>/<region>/<functionName>` → [setupProxy.js] forwards to the emulator
+ * (External references): Used by [getClientsEndpointUrl] and [openaiChat.js].
  */
-export function getClientsEndpointUrl(projectId, region) {
-  const fn = DUMMY_CLIENTS_FUNCTION_NAME;
-  const pathOnly = `/${projectId}/${region}/${fn}`;
+export function getCloudFunctionUrl(functionName, projectId, region) {
+  const pathOnly = `/${projectId}/${region}/${functionName}`;
 
   const runningOnDevMachine = process.env.NODE_ENV === 'development';
   if (!runningOnDevMachine) {
-    return `https://${region}-${projectId}.cloudfunctions.net/${fn}`;
+    return `https://${region}-${projectId}.cloudfunctions.net/${functionName}`;
   }
 
-  const useCreateReactAppProxy = process.env.REACT_APP_USE_RELATIVE_FUNCTIONS_PROXY === 'true';
-  if (useCreateReactAppProxy) {
-    return pathOnly;
-  }
+  return pathOnly;
+}
 
-  const emulatorBase =
-    process.env.REACT_APP_FUNCTIONS_EMULATOR_ORIGIN || 'http://127.0.0.1:5001';
-  const baseNoTrailingSlash = emulatorBase.replace(/\/$/, '');
-  return `${baseNoTrailingSlash}${pathOnly}`;
+/**
+ * Builds the URL that `fetch` uses to load the client list.
+ *
+ * - **Production:** `https://<region>-<project>.cloudfunctions.net/on_request_example`
+ * - **Local (`npm start`):** `/<project>/<region>/on_request_example` — [setupProxy.js] forwards only these paths to the emulator
+ */
+export function getClientsEndpointUrl(projectId, region) {
+  return getCloudFunctionUrl(DUMMY_CLIENTS_FUNCTION_NAME, projectId, region);
 }
 
 /**

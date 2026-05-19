@@ -4,9 +4,10 @@
 
 from firebase_functions import https_fn
 from firebase_functions.options import set_global_options
-from firebase_admin import initialize_app, firestore
+from firebase_admin import auth as firebase_auth, initialize_app, firestore
 import json
 import os
+from datetime import datetime, timezone
 
 from pymongo import MongoClient
 
@@ -27,15 +28,62 @@ _ALLOWED_WEB_DEV_ORIGINS = frozenset(
 )
 
 
+def _parse_extra_cors_origins() -> frozenset:
+     """Extra browser origins from ALLOWED_CORS_ORIGINS (comma-separated) for deployed Hosting URLs."""
+     raw = os.environ.get("ALLOWED_CORS_ORIGINS", "")
+     return frozenset(part.strip() for part in raw.split(",") if part.strip())
+
+
+def _firebase_hosting_origins() -> frozenset:
+     """Default Hosting origins for this Firebase project (works in Cloud Functions without extra env)."""
+     project = (
+          os.environ.get("GCLOUD_PROJECT")
+          or os.environ.get("GOOGLE_CLOUD_PROJECT")
+          or ""
+     )
+     if not project:
+          return frozenset()
+     return frozenset(
+          {
+               f"https://{project}.web.app",
+          }
+     )
+
+
 def _cors_headers_for_local_web(req: https_fn.Request) -> dict:
-     """Lets the Create React App dev server (localhost or 127.0.0.1) read JSON from the Functions emulator on port 5001."""
+     """CORS for React dev (localhost) and Firebase Hosting in production; supports GET/POST with Authorization."""
      origin = req.headers.get("Origin")
-     allow = origin if origin in _ALLOWED_WEB_DEV_ORIGINS else "http://localhost:3000"
+     allowed = (
+          _ALLOWED_WEB_DEV_ORIGINS
+          | _parse_extra_cors_origins()
+          | _firebase_hosting_origins()
+     )
+     allow = origin if origin in allowed else "http://localhost:3000"
      return {
           "Access-Control-Allow-Origin": allow,
-          "Access-Control-Allow-Methods": "GET, OPTIONS",
-          "Access-Control-Allow-Headers": "Content-Type",
+          "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type, Authorization",
      }
+
+
+def _mongodb_users_collection():
+     """Lynkfi account profiles: database from MONGODB_DATABASE, collection from MONGODB_USERS_COLLECTION (default `users`)."""
+     mongo_uri = os.environ.get("MONGODB_URI")
+     database_name = os.environ.get("MONGODB_DATABASE", "User")
+     collection_name = os.environ.get("MONGODB_USERS_COLLECTION", "EndUser")
+     client = MongoClient(mongo_uri)
+     return client[database_name][collection_name]
+
+
+def _json_error(
+     req: https_fn.Request, message: str, status: int
+) -> https_fn.Response:
+     return https_fn.Response(
+          json.dumps({"error": message}),
+          status=status,
+          mimetype="application/json",
+          headers=_cors_headers_for_local_web(req),
+     )
 
 
 @https_fn.on_request()
@@ -93,75 +141,70 @@ def on_request_example(req: https_fn.Request) -> https_fn.Response:
           headers=_cors_headers_for_local_web(req),
      )
 
-
 @https_fn.on_request()
-def get_clients_from_db(req: https_fn.Request) -> https_fn.Response:
-     db = firestore.client()
-     client_docs = (
-          db.collection("clients")
-          .select(
-               [
-                    "SystemID",
-                    "FirstName",
-                    "LastName",
-                    "Age",
-                    "Sex",
-                    "HeadOfHousehold",
-               ]
+def save_user_profile(req: https_fn.Request) -> https_fn.Response:
+     """POST JSON profile for the signed-in Firebase user; upserts into MongoDB `users` by verified uid."""
+     cors = _cors_headers_for_local_web(req)
+     if req.method == "OPTIONS":
+          return https_fn.Response("", status=204, headers=cors)
+     if req.method != "POST":
+          return _json_error(req, "Method not allowed", 405)
+
+     auth_header = req.headers.get("Authorization", "")
+     if not auth_header.startswith("Bearer "):
+          return _json_error(req, "Missing or invalid Authorization header", 401)
+
+     id_token = auth_header[len("Bearer ") :].strip()
+     if not id_token:
+          return _json_error(req, "Missing ID token", 401)
+
+     try:
+          decoded = firebase_auth.verify_id_token(id_token)
+     except Exception:
+          return _json_error(req, "Invalid or expired sign-in token", 401)
+
+     uid = decoded.get("uid")
+     if not uid:
+          return _json_error(req, "Invalid token payload", 401)
+
+     email = decoded.get("email") or ""
+
+     body = req.get_json(silent=True)
+     if not isinstance(body, dict):
+          return _json_error(req, "Expected JSON body", 400)
+
+     first_name = str(body.get("firstName", "")).strip()
+     last_name = str(body.get("lastName", "")).strip()
+     role = str(body.get("role", "")).strip()
+     if not first_name or not last_name or not role:
+          return _json_error(
+               req, "firstName, lastName, and role are required", 400
           )
-          .stream()
-     )
 
-     clients = [
-          {
-               "SystemID": doc.to_dict().get("SystemID"),
-               "FirstName": doc.to_dict().get("FirstName"),
-               "LastName": doc.to_dict().get("LastName"),
-               "Age": doc.to_dict().get("Age"),
-               "Sex": doc.to_dict().get("Sex"),
-               "HeadOfHousehold": doc.to_dict().get("HeadOfHousehold"),
-          }
-          for doc in client_docs
-     ]
+     users = _mongodb_users_collection()
 
-     return https_fn.Response(
-          json.dumps({"clients": clients}, indent=2),
-          mimetype="application/json",
-     )
-
-
-@https_fn.on_request()
-def get_clients_from_mongodb(req: https_fn.Request) -> https_fn.Response:
-     # PyMongo read pattern (filter, projection, limit): see MongoDB PyMongo driver
-     # "Find Documents" and "Specify Documents to Return" (limit / projection).
-     client = MongoClient(os.environ.get("MONGODB_URI", "mongodb://127.0.0.1:27017"))
-     collection = client[os.environ.get("MONGODB_DATABASE", "app")]["clients"]
-
-     projection = {
-          "_id": 0,
-          "SystemID": 1,
-          "FirstName": 1,
-          "LastName": 1,
-          "Age": 1,
-          "Sex": 1,
-          "HeadOfHousehold": 1,
-     }
-
-     cursor = collection.find({}, projection)
-
-     clients = [
-          {
-               "SystemID": doc.get("SystemID"),
-               "FirstName": doc.get("FirstName"),
-               "LastName": doc.get("LastName"),
-               "Age": doc.get("Age"),
-               "Sex": doc.get("Sex"),
-               "HeadOfHousehold": doc.get("HeadOfHousehold"),
-          }
-          for doc in cursor
-     ]
+     now = datetime.now(timezone.utc)
+     try:
+          users.update_one(
+               {"_id": uid},
+               {
+                    "$set": {
+                         "uid": uid,
+                         "firstName": first_name,
+                         "lastName": last_name,
+                         "role": role,
+                         "email": email,
+                    },
+                    "$setOnInsert": {"createdAt": now},
+               },
+               upsert=True,
+          )
+     except Exception:
+          return _json_error(req, "Could not save profile to database", 503)
 
      return https_fn.Response(
-          json.dumps({"clients": clients}, indent=2),
+          json.dumps({"ok": True}),
+          status=200,
           mimetype="application/json",
+          headers=cors,
      )

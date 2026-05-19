@@ -14,8 +14,27 @@ import Brain from '../Component/Layout/DynamicMain/2.1-Brain/Brain';
 import TaskEdit from '../Component/Layout/DynamicMain/2.4-TaskEdit/TaskEdit';
 import Footer from '../Component/Layout/Footer/1.1 Footer/Footer';
 import { fetchDummyClientsFromMainPy } from '../Component/API/clientfetch';
+import { useAuth } from '../../Auth/AuthContext';
+
+// (Function meaning): Turn the signed-in Firebase user into one or two letters for the round profile button in [NavBar.js].
+function getProfileInitials(user) {
+  const displayName = user?.displayName?.trim();
+  if (displayName) {
+    const parts = displayName.split(/\s+/).filter(Boolean);
+    if (parts.length >= 2) {
+      return `${parts[0][0]}${parts[parts.length - 1][0]}`.toUpperCase();
+    }
+    return displayName.slice(0, 2).toUpperCase();
+  }
+  const localPart = (user?.email?.trim().split('@')[0] || '');
+  if (localPart.length >= 2) return localPart.slice(0, 2).toUpperCase();
+  if (localPart.length === 1) return localPart.toUpperCase();
+  return '?';
+}
 
 function LandingPage() {
+  const { user, signOut } = useAuth();
+  const [loggingOut, setLoggingOut] = useState(false);
   // Start as [] so children always receive an array: empty means "still loading or none yet".
   const [clients, setClients] = useState([]);
   // (Function meaning): `false` shows progress in [MainLanding.js]; `true` shows [Clienttask.js]. The person icon only turns this on — it does nothing if you are already on client tasks (see `onUserIconClick`).
@@ -45,6 +64,19 @@ function LandingPage() {
     if (!clientTaskOpen) return;
     pullClientsFromBackend();
   }, [clientTaskOpen, pullClientsFromBackend]);
+
+  // (Function meaning): Call Firebase sign-out when the user taps their initials; [App.js] then shows the welcome screen again.
+  const handleProfileLogout = async () => {
+    if (loggingOut) return;
+    setLoggingOut(true);
+    try {
+      await signOut();
+    } catch (err) {
+      console.error('[LandingPage] sign out', err);
+    } finally {
+      setLoggingOut(false);
+    }
+  };
 
   return (
     <div className="landing-page">
@@ -76,6 +108,9 @@ function LandingPage() {
           setTaskEditViewOpen(true);
         }}
         clipboardPanelOpen={taskEditViewOpen}
+        profileInitials={getProfileInitials(user)}
+        onProfileClick={handleProfileLogout}
+        profileBusy={loggingOut}
       />
       <div className="landing-page__content">
         <TopRibbon clients={clients} />
