@@ -8,7 +8,7 @@ import {
   getAuthErrorMessage,
   signInWithEmail,
   signInWithGoogle,
-} from '../authService';
+} from '../Events/authService';
 
 // (Function meaning): Form where an existing user enters email and password (or uses Google) to get into the app.
 function Login({ onBack, onGoSignup }) {

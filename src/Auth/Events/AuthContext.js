@@ -3,8 +3,9 @@
  */
 import { createContext, useContext, useEffect, useState } from 'react';
 import { onAuthStateChanged } from 'firebase/auth';
-import { auth, authPersistenceReady } from '../firebase';
+import { auth, authPersistenceReady } from '../../firebase';
 import { signOutUser } from './authService';
+import { useInactivityLogout } from './useInactivityLogout';
 
 // (Function meaning): Empty box that child components fill with `useAuth()` to read user and loading state.
 const AuthContext = createContext(null);
@@ -37,6 +38,9 @@ export function AuthProvider({ children }) {
       unsubscribe();
     };
   }, []);
+
+  // (Function meaning): While signed in, sign out after 1 hour with no pointer/keyboard/scroll/touch activity.
+  useInactivityLogout(user);
 
   // (Function meaning): Bundle user, loading flag, and sign-out into one object for children.
   const value = {

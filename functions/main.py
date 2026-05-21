@@ -4,7 +4,7 @@
 
 from firebase_functions import https_fn
 from firebase_functions.options import set_global_options
-from firebase_admin import auth as firebase_auth, initialize_app, firestore
+from firebase_admin import auth as firebase_auth, initialize_app
 import json
 import os
 from datetime import datetime, timezone
@@ -73,6 +73,33 @@ def _mongodb_users_collection():
      collection_name = os.environ.get("MONGODB_USERS_COLLECTION", "EndUser")
      client = MongoClient(mongo_uri)
      return client[database_name][collection_name]
+
+
+def _mongodb_login_events_collection():
+     """Login audit trail: same database as profiles, collection from MONGODB_LOGIN_EVENTS_COLLECTION."""
+     mongo_uri = os.environ.get("MONGODB_URI")
+     database_name = os.environ.get("MONGODB_DATABASE", "User")
+     collection_name = os.environ.get("MONGODB_LOGIN_EVENTS_COLLECTION", "login_events")
+     client = MongoClient(mongo_uri)
+     return client[database_name][collection_name]
+
+
+_ALLOWED_LOGIN_EVENT_TYPES = frozenset({"sign_in", "sign_up", "inactivity_logout"})
+_ALLOWED_LOGIN_METHODS = frozenset({"email", "google", "unknown"})
+
+
+def _verify_bearer_token(req: https_fn.Request):
+     """Return decoded Firebase token dict or None if missing/invalid."""
+     auth_header = req.headers.get("Authorization", "")
+     if not auth_header.startswith("Bearer "):
+          return None
+     id_token = auth_header[len("Bearer ") :].strip()
+     if not id_token:
+          return None
+     try:
+          return firebase_auth.verify_id_token(id_token)
+     except Exception:
+          return None
 
 
 def _json_error(
@@ -201,6 +228,66 @@ def save_user_profile(req: https_fn.Request) -> https_fn.Response:
           )
      except Exception:
           return _json_error(req, "Could not save profile to database", 503)
+
+     return https_fn.Response(
+          json.dumps({"ok": True}),
+          status=200,
+          mimetype="application/json",
+          headers=cors,
+     )
+
+
+@https_fn.on_request()
+def log_login(req: https_fn.Request) -> https_fn.Response:
+     """POST login audit event for the signed-in Firebase user; append-only insert into MongoDB login_events."""
+     cors = _cors_headers_for_local_web(req)
+     if req.method == "OPTIONS":
+          return https_fn.Response("", status=204, headers=cors)
+     if req.method != "POST":
+          return _json_error(req, "Method not allowed", 405)
+
+     decoded = _verify_bearer_token(req)
+     if not decoded:
+          return _json_error(req, "Invalid or expired sign-in token", 401)
+
+     uid = decoded.get("uid")
+     if not uid:
+          return _json_error(req, "Invalid token payload", 401)
+
+     email = decoded.get("email") or ""
+
+     body = req.get_json(silent=True)
+     if not isinstance(body, dict):
+          return _json_error(req, "Expected JSON body", 400)
+
+     event_type = str(body.get("eventType", "")).strip()
+     method = str(body.get("method", "unknown")).strip()
+     if event_type not in _ALLOWED_LOGIN_EVENT_TYPES:
+          return _json_error(
+               req,
+               "eventType must be sign_in, sign_up, or inactivity_logout",
+               400,
+          )
+     if method not in _ALLOWED_LOGIN_METHODS:
+          method = "unknown"
+
+     user_agent = req.headers.get("User-Agent", "") or ""
+
+     events = _mongodb_login_events_collection()
+     now = datetime.now(timezone.utc)
+     try:
+          events.insert_one(
+               {
+                    "uid": uid,
+                    "email": email,
+                    "eventType": event_type,
+                    "method": method,
+                    "createdAt": now,
+                    "userAgent": user_agent,
+               }
+          )
+     except Exception:
+          return _json_error(req, "Could not save login event to database", 503)
 
      return https_fn.Response(
           json.dumps({"ok": True}),

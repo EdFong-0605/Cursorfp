@@ -5,7 +5,7 @@ import { useEffect, useState } from 'react';
 import './App.css';
 import './Auth/authShared.css';
 import LandingPage from './unAuth/Landing Page/LandingPage';
-import { AuthProvider, useAuth } from './Auth/AuthContext';
+import { AuthProvider, useAuth } from './Auth/Events/AuthContext';
 import LoginLanding from './Auth/LoginLanding';
 import Login from './Auth/loginPage/Login';
 import Createuser from './Auth/Createuser/Createuser';

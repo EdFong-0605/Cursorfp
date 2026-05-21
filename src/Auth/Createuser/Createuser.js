@@ -7,7 +7,7 @@ import '../authShared.css';
 import {
   getAuthErrorMessage,
   signUpWithEmail,
-} from '../authService';
+} from '../Events/authService';
 
 // (Function meaning): Form where a new user picks email and password (or uses Google) to register.
 function Createuser({ onBack, onGoLogin }) {

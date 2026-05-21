@@ -14,7 +14,7 @@ import Brain from '../Component/Layout/DynamicMain/2.1-Brain/Brain';
 import TaskEdit from '../Component/Layout/DynamicMain/2.4-TaskEdit/TaskEdit';
 import Footer from '../Component/Layout/Footer/1.1 Footer/Footer';
 import { fetchDummyClientsFromMainPy } from '../Component/API/clientfetch';
-import { useAuth } from '../../Auth/AuthContext';
+import { useAuth } from '../../Auth/Events/AuthContext';
 
 // (Function meaning): Turn the signed-in Firebase user into one or two letters for the round profile button in [NavBar.js].
 function getProfileInitials(user) {
