@@ -60,6 +60,24 @@ Set `MONGODB_URI` and `MONGODB_DATABASE` in the Cloud Functions runtime environm
 
 After deploy, sign up on your hosted app and confirm the same `users` document in Atlas.
 
+## Firm admin check (`check_firm_admin`) and MongoDB
+
+The landing sidebar shows the admin (user-tie) icon only when this endpoint returns `{ "isFirmAdmin": true }`. The server reads the signed-in user's profile from the same users collection as `save_user_profile` and checks `firmRole === "firm_admin"`.
+
+| | |
+|--|--|
+| Method | `GET` (plus `OPTIONS` for CORS) |
+| Auth | `Authorization: Bearer <Firebase ID token>` |
+| Success | `{ "isFirmAdmin": true \| false }` |
+
+Uses the same `MONGODB_URI`, `MONGODB_DATABASE`, and `MONGODB_USERS_COLLECTION` as `save_user_profile`. Restart the functions emulator after adding or changing this function locally.
+
+Deploy:
+
+`npx -y firebase-tools@latest deploy --only functions:check_firm_admin`
+
+Frontend: `checkFirmAdmin` in `src/Auth/API/userProfileApi.js`, called from `LandingPage.js`.
+
 ## Login audit log (`log_login`) and MongoDB
 
 Sign-in history is **append-only**: one MongoDB document per event, never updated. That is different from the profile collection (`EndUser` / `users`), which stores one document per person and gets upserted when they sign up.
@@ -111,3 +129,61 @@ Or deploy all functions: `npx -y firebase-tools@latest deploy --only functions`
 - [`src/Auth/API/loginLogApi.js`](../src/Auth/API/loginLogApi.js) — POST to `log_login`
 - [`src/Auth/authService.js`](../src/Auth/authService.js) — logs after sign-in / sign-up (failures only go to console)
 - [`src/Auth/useInactivityLogout.js`](../src/Auth/useInactivityLogout.js) — 1 hour idle → `inactivity_logout` then sign-out
+
+## Firm onboarding (`save_firm`, `verify_firm`) and MongoDB `Firms`
+
+During **Setup firm** (login screen → Create Firm), the app saves a firm record before creating Firebase users. No Bearer token is required for `save_firm` or `verify_firm` (onboarding only).
+
+| Collection (env-driven name) | Purpose | Documents |
+|------------------------------|---------|-----------|
+| `MONGODB_FIRMS_COLLECTION` (default `Firms`) | Firm workspace | One per firm (`firmId` = `_id`) |
+| `MONGODB_USERS_COLLECTION` (default `EndUser`) | User profiles | `firmId` / `firmRole` set when a member signs up |
+
+`save_user_profile` can also `$addToSet` on `Firms.approvedMembers` with `{ uid, firmRole, email }` when `firmId` and `firmRole` are sent in the POST body.
+
+### Environment variables
+
+Uses the same `MONGODB_URI` and `MONGODB_DATABASE` as profiles.
+
+| Variable | Default | Purpose |
+|----------|---------|---------|
+| `MONGODB_URI` | (none — required for Atlas) | Connection string (server only) |
+| `MONGODB_DATABASE` | `User` | Database name |
+| `MONGODB_FIRMS_COLLECTION` | `Firms` | Firm documents |
+
+### `save_firm` (POST)
+
+Required: `firmName`, `firmType`; if `firmType` is `other`, also `firmTypeOther`.
+
+Optional: address/team fields, `firmRoles` (array of `{ name, firmAccess }` where `firmAccess` is `full`, `standard`, or `read_only`), `pendingMembers` (array of `{ firmRole, firstName, lastName, email }` — no passwords). Each `pendingMembers.firmRole` must match a `firmRoles[].name`.
+
+Each new firm document also includes empty member-status arrays: `approvedMembers`, `suspendedMembers`, `onLeaveMembers`, and `inactiveMembers`. On insert, all four are `[]` except `pendingMembers` (from the request). `approvedMembers` is filled when users sign up with a `firmId` (see `save_user_profile` below). The other three arrays are reserved for a future approval/status workflow.
+
+Firm members store only `firmRole` on `EndUser` (not a separate `role` field). Firm Admin uses `firmRole: firm_admin` (not in the custom `firmRoles` list). Standalone sign-up (no firm) still uses `role` for job title.
+
+Returns `{ "ok": true, "firmId": "<uuid>" }`.
+
+### `verify_firm` (GET or POST)
+
+- GET: `?firmId=<id>`
+- POST: `{ "firmId": "<id>" }`
+
+Returns `{ "ok": true, "firmId": "..." }` or `404` `{ "error": "Firm not found" }`.
+
+### Local emulator
+
+1. Set Mongo env vars before starting the functions emulator (same as profiles).
+2. Restart the emulator after changing `functions/main.py` so `save_firm` and `verify_firm` load.
+3. Login → **Setup firm** → submit → Atlas → `Firms` and `EndUser` collections.
+
+### Deployed functions (production)
+
+`npx -y firebase-tools@latest deploy --only functions:save_firm,functions:verify_firm`
+
+Or deploy all functions: `npx -y firebase-tools@latest deploy --only functions`
+
+### Frontend
+
+- [`src/Auth/API/firmApi.js`](../src/Auth/API/firmApi.js) — `saveFirm`, `verifyFirm`
+- [`src/Auth/Events/firmSetupService.js`](../src/Auth/Events/firmSetupService.js) — save → verify → multi signup → sign in as Firm Admin
+- [`src/Auth/loginPage/2.2-Createfirm/Createfirm.js`](../src/Auth/loginPage/2.2-Createfirm/Createfirm.js) — firm setup form

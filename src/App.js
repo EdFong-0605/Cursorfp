@@ -6,14 +6,14 @@ import './App.css';
 import './Auth/authShared.css';
 import LandingPage from './unAuth/Landing Page/LandingPage';
 import { AuthProvider, useAuth } from './Auth/Events/AuthContext';
-import LoginLanding from './Auth/LoginLanding';
-import Login from './Auth/loginPage/Login';
-import Createuser from './Auth/Createuser/Createuser';
+import Login from './Auth/loginPage/1.1-MainLoginPage/Login';
+import Createuser from './Auth/loginPage/2.1-Createuser/Createuser';
+import Createfirm from './Auth/loginPage/2.2-Createfirm/Createfirm';
 
-// (Function meaning): `landing` = welcome buttons, `login` = sign-in form, `signup` = create-account form.
-const AUTH_SCREEN_LANDING = 'landing';
+// (Function meaning): `login` = sign-in form, `signup` = create-account form, `setup_firm` = firm onboarding.
 const AUTH_SCREEN_LOGIN = 'login';
 const AUTH_SCREEN_SIGNUP = 'signup';
+const AUTH_SCREEN_SETUP_FIRM = 'setup_firm';
 
 // (Function meaning): While Firebase checks for an existing session, show a simple loading message.
 function AuthLoading() {
@@ -27,12 +27,12 @@ function AuthLoading() {
 // (Function meaning): Pick auth screen or main app based on whether [AuthContext.js] has a `user`.
 function AppRoutes() {
   const { user, loading } = useAuth();
-  const [authScreen, setAuthScreen] = useState(AUTH_SCREEN_LANDING);
+  const [authScreen, setAuthScreen] = useState(AUTH_SCREEN_LOGIN);
 
-  // (Function meaning): After sign-out (or session expires), show the welcome screen again — same on localhost and production.
+  // (Function meaning): After sign-out (or session expires), show the sign-in screen again — same on localhost and production.
   useEffect(() => {
     if (!user) {
-      setAuthScreen(AUTH_SCREEN_LANDING);
+      setAuthScreen(AUTH_SCREEN_LOGIN);
     }
   }, [user]);
 
@@ -41,26 +41,21 @@ function AppRoutes() {
   }
 
   if (!user) {
-    if (authScreen === AUTH_SCREEN_LOGIN) {
-      return (
-        <Login
-          onBack={() => setAuthScreen(AUTH_SCREEN_LANDING)}
-          onGoSignup={() => setAuthScreen(AUTH_SCREEN_SIGNUP)}
-        />
-      );
-    }
     if (authScreen === AUTH_SCREEN_SIGNUP) {
       return (
         <Createuser
-          onBack={() => setAuthScreen(AUTH_SCREEN_LANDING)}
+          onBack={() => setAuthScreen(AUTH_SCREEN_LOGIN)}
           onGoLogin={() => setAuthScreen(AUTH_SCREEN_LOGIN)}
         />
       );
     }
+    if (authScreen === AUTH_SCREEN_SETUP_FIRM) {
+      return <Createfirm onBack={() => setAuthScreen(AUTH_SCREEN_LOGIN)} />;
+    }
     return (
-      <LoginLanding
-        onGoLogin={() => setAuthScreen(AUTH_SCREEN_LOGIN)}
+      <Login
         onGoSignup={() => setAuthScreen(AUTH_SCREEN_SIGNUP)}
+        onGoSetupFirm={() => setAuthScreen(AUTH_SCREEN_SETUP_FIRM)}
       />
     );
   }

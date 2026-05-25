@@ -1,0 +1,21 @@
+/* Admin page (full main column, same shell as brain / main landing). */
+
+/* (External references): Class names used in [Admin.js]. Layout matches [../2.4-TaskEdit/TaskEdit.css] and the framed pane in [../1.1-Mainlanding/MainLanding.css] so height and borders line up with other middle-column views. */
+.admin-page {
+  box-sizing: border-box;
+  width: 100%;
+  flex: 1 1 auto;
+  min-height: 0;
+  border: 2px solid #000;
+  border-top: 3px solid #7f93a8;
+  box-shadow: inset 0 3px 0 #2b3a49;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.admin-page__message {
+  margin: 0;
+  font-size: 1.25rem;
+}

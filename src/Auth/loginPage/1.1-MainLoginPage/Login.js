@@ -3,15 +3,15 @@
  */
 import { useState } from 'react';
 import './Login.css';
-import '../authShared.css';
+import '../../authShared.css';
 import {
   getAuthErrorMessage,
   signInWithEmail,
   signInWithGoogle,
-} from '../Events/authService';
+} from '../../Events/authService';
 
 // (Function meaning): Form where an existing user enters email and password (or uses Google) to get into the app.
-function Login({ onBack, onGoSignup }) {
+function Login({ onGoSignup, onGoSetupFirm }) {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -99,11 +99,17 @@ function Login({ onBack, onGoSignup }) {
             Create an account
           </button>
         </p>
-        <p className="auth-footer">
-          <button type="button" className="auth-link" onClick={onBack}>
-            Back
+
+        {onGoSetupFirm ? (
+          <button
+            type="button"
+            className="auth-btn auth-btn--ghost"
+            onClick={onGoSetupFirm}
+            disabled={busy}
+          >
+            Setup firm
           </button>
-        </p>
+        ) : null}
       </div>
     </div>
   );

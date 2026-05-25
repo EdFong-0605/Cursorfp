@@ -40,18 +40,31 @@ export function getAuthErrorMessage(error) {
 }
 
 /**
- * @param {{ firstName?: string, lastName?: string, role?: string } | undefined} profile
+ * @param {{ firstName?: string, lastName?: string, role?: string, firmId?: string, firmRole?: string } | undefined} profile
  */
 // (Function meaning): Create Firebase account, save name/role to Mongo if provided, log sign_up, return the new user.
 export async function signUpWithEmail(email, password, profile) {
   const firstName = profile?.firstName?.trim() || '';
   const lastName = profile?.lastName?.trim() || '';
   const role = profile?.role?.trim() || '';
+  const firmId = profile?.firmId?.trim() || '';
+  const firmRoleFromProfile = profile?.firmRole?.trim() || '';
+  const firmRole = firmRoleFromProfile || (firmId ? role : '');
   const hasProfilePayload = profile != null && typeof profile === 'object';
 
   // (Function meaning): If [Createuser.js] sent a profile object, require first name, last name, and role before Firebase creates the account (avoids an account with no Mongo profile).
   // (External references): [Createuser.js] passes `{ firstName, lastName, role }` as the third argument.
-  if (hasProfilePayload && (!firstName || !lastName || !role)) {
+  if (hasProfilePayload && (!firstName || !lastName)) {
+    const err = new Error('First name and last name are required.');
+    err.code = 'auth/missing-profile';
+    throw err;
+  }
+  if (hasProfilePayload && firmId && !firmRole) {
+    const err = new Error('Firm role is required.');
+    err.code = 'auth/missing-profile';
+    throw err;
+  }
+  if (hasProfilePayload && !firmId && !role) {
     const err = new Error('First name, last name, and role are required.');
     err.code = 'auth/missing-profile';
     throw err;
@@ -67,7 +80,11 @@ export async function signUpWithEmail(email, password, profile) {
   // (Function meaning): When a full profile was provided, save first name, last name, and role to Mongo; throw `profile/save-failed` if the server rejects it.
   // (External references): [userProfileApi.js] `saveUserProfile`; [Createuser.js] catches `profile/save-failed` for the error message.
   if (hasProfilePayload) {
-    await saveUserProfile({ user, firstName, lastName, role });
+    if (firmId) {
+      await saveUserProfile({ user, firstName, lastName, firmId, firmRole });
+    } else {
+      await saveUserProfile({ user, firstName, lastName, role });
+    }
   }
 
   return user;
