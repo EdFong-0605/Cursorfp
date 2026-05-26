@@ -16,28 +16,39 @@ const AUTH_SCREEN_SIGNUP = 'signup';
 const AUTH_SCREEN_SETUP_FIRM = 'setup_firm';
 
 // (Function meaning): While Firebase checks for an existing session, show a simple loading message.
-function AuthLoading() {
+function AuthLoading({ message = 'Loading…' }) {
   return (
     <div className="auth-page">
-      <p className="auth-card__subtitle">Loading…</p>
+      <p className="auth-card__subtitle">{message}</p>
     </div>
   );
 }
 
 // (Function meaning): Pick auth screen or main app based on whether [AuthContext.js] has a `user`.
 function AppRoutes() {
-  const { user, loading } = useAuth();
+  const { user, loading, firmSetupInProgress, sessionReady } = useAuth();
   const [authScreen, setAuthScreen] = useState(AUTH_SCREEN_LOGIN);
 
   // (Function meaning): After sign-out (or session expires), show the sign-in screen again — same on localhost and production.
+  // (External references): Skip while [Createfirm.js] is creating multiple accounts so we do not jump to the login screen between sign-up and sign-out steps.
   useEffect(() => {
-    if (!user) {
+    if (!user && !firmSetupInProgress) {
       setAuthScreen(AUTH_SCREEN_LOGIN);
     }
-  }, [user]);
+  }, [user, firmSetupInProgress]);
 
   if (loading) {
     return <AuthLoading />;
+  }
+
+  if (firmSetupInProgress) {
+    return (
+      <AuthLoading message="Creating firm and team accounts…" />
+    );
+  }
+
+  if (user && !sessionReady) {
+    return <AuthLoading message="Loading…" />;
   }
 
   if (!user) {

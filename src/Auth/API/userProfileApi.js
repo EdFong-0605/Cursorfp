@@ -80,9 +80,9 @@ export async function saveUserProfile({ user, firstName, lastName, role, firmId,
  * @param {{ user: import('firebase/auth').User }} params
  * @returns {Promise<boolean>}
  */
-// (Function meaning): Ask Firebase for a proof-of-login token, GET the backend check, and return true only when the server says this user is a firm admin.
-export async function checkFirmAdmin({ user }) {
-  const token = await user.getIdToken();
+// (Function meaning): Ask Firebase for a fresh proof-of-login token, GET the backend check, and return true only when the server says this user is a firm admin.
+async function fetchFirmAdminCheck(user, forceRefresh) {
+  const token = await user.getIdToken(forceRefresh);
   const url = getCheckFirmAdminUrl();
   const res = await fetch(url, {
     method: 'GET',
@@ -96,6 +96,29 @@ export async function checkFirmAdmin({ user }) {
     data = await res.json();
   } catch {
     data = {};
+  }
+
+  return { res, data };
+}
+
+// (Function meaning): Milliseconds to wait between retries when the server returns 401 (token may not be ready right after sign-in).
+const CHECK_FIRM_ADMIN_401_BACKOFF_MS = [300, 600, 1200];
+
+// (Function meaning): Ask Firebase for a proof-of-login token, GET the backend check, and return true only when the server says this user is a firm admin.
+export async function checkFirmAdmin({ user }) {
+  if (!user) {
+    return false;
+  }
+
+  let { res, data } = await fetchFirmAdminCheck(user, true);
+  for (const delayMs of CHECK_FIRM_ADMIN_401_BACKOFF_MS) {
+    if (res.status !== 401) {
+      break;
+    }
+    await new Promise((resolve) => {
+      setTimeout(resolve, delayMs);
+    });
+    ({ res, data } = await fetchFirmAdminCheck(user, true));
   }
 
   if (!res.ok) {

@@ -17,7 +17,6 @@ import Admin from '../Component/Layout/DynamicMain/2.5 Admin Task/Admin';
 import Footer from '../Component/Layout/Footer/1.1 Footer/Footer';
 import { fetchDummyClientsFromMainPy } from '../Component/API/clientfetch';
 import { useAuth } from '../../Auth/Events/AuthContext';
-import { checkFirmAdmin } from '../../Auth/API/userProfileApi';
 
 // (Function meaning): Turn the signed-in Firebase user into one or two letters for the round profile button in [NavBar.js].
 function getProfileInitials(user) {
@@ -35,17 +34,8 @@ function getProfileInitials(user) {
   return '?';
 }
 
-// (Function meaning): Full-screen “Loading…” while [checkFirmAdmin] runs; same layout classes as [App.js] `AuthLoading`.
-function SessionLoading() {
-  return (
-    <div className="auth-page">
-      <p className="auth-card__subtitle">Loading…</p>
-    </div>
-  );
-}
-
 function LandingPage() {
-  const { user, signOut } = useAuth();
+  const { user, signOut, isFirmAdmin } = useAuth();
   const [loggingOut, setLoggingOut] = useState(false);
   // Start as [] so children always receive an array: empty means "still loading or none yet".
   const [clients, setClients] = useState([]);
@@ -57,11 +47,6 @@ function LandingPage() {
   const [taskEditViewOpen, setTaskEditViewOpen] = useState(false);
   // (Function meaning): When `true`, the middle column shows [Admin.js]. User-tie icon sets this on and clears brain, client-task, and task edit (same style as clipboard).
   const [adminViewOpen, setAdminViewOpen] = useState(false);
-  // (Function meaning): When `true`, [NavBar.js] shows the user-tie icon; set only after [checkFirmAdmin] confirms firm_admin on the server.
-  const [showAdminIcon, setShowAdminIcon] = useState(false);
-  // (Function meaning): `false` until [checkFirmAdmin] finishes so the landing shell does not flash before the admin icon decision.
-  const [sessionReady, setSessionReady] = useState(false);
-
   // (Function meaning): `fetchDummyClientsFromMainPy` runs in the browser and calls `on_request_example` in [functions/main.py]; the JSON `clients` array becomes `id` / `label` rows for [MainLanding.js] → [Clienttask.js] → [Clientbar.js].
   const pullClientsFromBackend = useCallback(async () => {
     try {
@@ -83,36 +68,13 @@ function LandingPage() {
     pullClientsFromBackend();
   }, [clientTaskOpen, pullClientsFromBackend]);
 
-  // (Function meaning): When a user is signed in, ask the backend if they are a firm admin; hide the admin icon and close the admin pane if not; then allow the landing shell to render.
+  // (Function meaning): When [AuthContext.js] says this user is not a firm admin, close the admin pane so a stale open state cannot show [Admin.js].
+  // (External references): `isFirmAdmin` is set by [AuthContext.js] via [userProfileApi.js] `checkFirmAdmin` on every login.
   useEffect(() => {
-    if (!user) {
-      setSessionReady(false);
-      setShowAdminIcon(false);
+    if (!isFirmAdmin) {
       setAdminViewOpen(false);
-      return;
     }
-    setSessionReady(false);
-    let cancelled = false;
-    checkFirmAdmin({ user })
-      .then((ok) => {
-        if (cancelled) return;
-        setShowAdminIcon(ok);
-        if (!ok) setAdminViewOpen(false);
-      })
-      .catch((err) => {
-        console.error('[LandingPage] check firm admin', err);
-        if (!cancelled) {
-          setShowAdminIcon(false);
-          setAdminViewOpen(false);
-        }
-      })
-      .finally(() => {
-        if (!cancelled) setSessionReady(true);
-      });
-    return () => {
-      cancelled = true;
-    };
-  }, [user]);
+  }, [isFirmAdmin]);
 
   // (Function meaning): Call Firebase sign-out when the user taps their initials; [App.js] then shows the welcome screen again.
   const handleProfileLogout = async () => {
@@ -126,10 +88,6 @@ function LandingPage() {
       setLoggingOut(false);
     }
   };
-
-  if (!sessionReady) {
-    return <SessionLoading />;
-  }
 
   return (
     <div className="landing-page">
@@ -174,7 +132,7 @@ function LandingPage() {
           setAdminViewOpen(true);
         }}
         adminPanelOpen={adminViewOpen}
-        showAdminIcon={showAdminIcon}
+        showAdminIcon={isFirmAdmin}
         profileInitials={getProfileInitials(user)}
         onProfileClick={handleProfileLogout}
         profileBusy={loggingOut}
@@ -185,7 +143,7 @@ function LandingPage() {
           <Brain />
         ) : taskEditViewOpen ? (
           <TaskEdit />
-        ) : showAdminIcon && adminViewOpen ? (
+        ) : isFirmAdmin && adminViewOpen ? (
           <Admin />
         ) : (
           <MainLanding clients={clients} showClientTask={clientTaskOpen} />

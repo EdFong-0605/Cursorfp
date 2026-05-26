@@ -10,6 +10,7 @@ import SignupUserFields, {
   validateSignupUserFields,
 } from '../shared/SignupUserFields';
 import { runFirmSetup } from '../../Events/firmSetupService';
+import { useAuth } from '../../Events/AuthContext';
 
 const ADMIN_ROLE_FIELD = { type: 'hidden', value: 'admin' };
 
@@ -90,7 +91,7 @@ function createAdditionalUserRow() {
 // (Function meaning): Build the object we send to `save_firm` when the form passes validation.
 function buildFirmPayload(form, firmRoles, additionalUsers) {
   const normalizedRoles = normalizeFirmRolesForSave(firmRoles);
-  const pendingMembers = additionalUsers.map((u) => ({
+  const approvedMembers = additionalUsers.map((u) => ({
     firmRole: u.role.trim(),
     firstName: u.firstName.trim(),
     lastName: u.lastName.trim(),
@@ -115,12 +116,13 @@ function buildFirmPayload(form, firmRoles, additionalUsers) {
     firmRoles: normalizedRoles,
     creatorFirmRole: 'firm_admin',
     adminAcknowledged: form.adminAcknowledged,
-    pendingMembers,
+    approvedMembers,
   };
 }
 
 // (Function meaning): Form where a new firm is saved, users are created, and Firm Admin is signed in at the end.
-function Createfirm({ onBack, onComplete }) {
+function Createfirm({ onBack }) {
+  const { setFirmSetupInProgress } = useAuth();
   const [firmName, setFirmName] = useState('');
   const [firmType, setFirmType] = useState('');
   const [firmTypeOther, setFirmTypeOther] = useState('');
@@ -259,6 +261,20 @@ function Createfirm({ onBack, onComplete }) {
       }
     }
 
+    const seenEmails = new Set();
+    const adminEmailKey = firmAdmin.email.trim().toLowerCase();
+    seenEmails.add(adminEmailKey);
+    for (let i = 0; i < additionalUsers.length; i += 1) {
+      const emailKey = additionalUsers[i].email.trim().toLowerCase();
+      if (seenEmails.has(emailKey)) {
+        setError(
+          `Additional user ${i + 1}: That email is already used for another account on this form.`,
+        );
+        return;
+      }
+      seenEmails.add(emailKey);
+    }
+
     const form = {
       firmName,
       firmType,
@@ -279,14 +295,13 @@ function Createfirm({ onBack, onComplete }) {
     const firmPayload = buildFirmPayload(form, firmRoles, additionalUsers);
 
     setBusy(true);
+    setFirmSetupInProgress(true);
     try {
-      if (typeof onComplete === 'function') {
-        onComplete(firmPayload);
-      } else {
-        await runFirmSetup({ firmPayload, firmAdmin, additionalUsers });
-      }
+      await runFirmSetup({ firmPayload, firmAdmin, additionalUsers });
+      setFirmSetupInProgress(false);
     } catch (err) {
       setError(err?.message || 'Something went wrong during firm setup.');
+      setFirmSetupInProgress(false);
     } finally {
       setBusy(false);
     }

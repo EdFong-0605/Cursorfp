@@ -400,20 +400,20 @@ def save_firm(req: https_fn.Request) -> https_fn.Response:
 
      firm_roles = _normalize_firm_roles(body.get("firmRoles", []))
 
-     pending_raw = body.get("pendingMembers")
-     pending_members = []
+     approved_raw = body.get("approvedMembers")
+     approved_members = []
      firm_roles_set = _firm_role_names(firm_roles)
-     if pending_raw is not None:
-          if not isinstance(pending_raw, list):
-               return _json_error(req, "pendingMembers must be an array", 400)
-          for item in pending_raw:
+     if approved_raw is not None:
+          if not isinstance(approved_raw, list):
+               return _json_error(req, "approvedMembers must be an array", 400)
+          for item in approved_raw:
                if not isinstance(item, dict):
-                    return _json_error(req, "Each pendingMembers entry must be an object", 400)
+                    return _json_error(req, "Each approvedMembers entry must be an object", 400)
                firm_role = str(item.get("firmRole", "")).strip()
                if firm_role not in firm_roles_set:
                     return _json_error(
                          req,
-                         "pendingMembers firmRole must be one of the firm's firmRoles",
+                         "approvedMembers firmRole must be one of the firm's firmRoles",
                          400,
                     )
                first_name = str(item.get("firstName", "")).strip()
@@ -422,10 +422,10 @@ def save_firm(req: https_fn.Request) -> https_fn.Response:
                if not first_name or not last_name or not email:
                     return _json_error(
                          req,
-                         "pendingMembers entries require firstName, lastName, firmRole, and email",
+                         "approvedMembers entries require firstName, lastName, firmRole, and email",
                          400,
                     )
-               pending_members.append(
+               approved_members.append(
                     {
                          "firmRole": firm_role,
                          "firstName": first_name,
@@ -454,8 +454,8 @@ def save_firm(req: https_fn.Request) -> https_fn.Response:
           "teamSize": str(body.get("teamSize", "")).strip(),
           "timezone": str(body.get("timezone", "")).strip(),
           "firmRoles": firm_roles,
-          "pendingMembers": pending_members,
-          "approvedMembers": [],
+          "pendingMembers": [],
+          "approvedMembers": approved_members,
           "suspendedMembers": [],
           "onLeaveMembers": [],
           "inactiveMembers": [],

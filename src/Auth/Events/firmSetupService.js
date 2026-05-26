@@ -47,14 +47,8 @@ export async function runFirmSetup({ firmPayload, firmAdmin, additionalUsers }) 
   const adminEmail = firmAdmin?.email?.trim() || '';
   const adminPassword = firmAdmin?.password || '';
 
+  // (Function meaning): Create team members first, Firm Admin last so the final sign-in is always the admin session.
   const usersToCreate = [
-    {
-      firmRole: 'firm_admin',
-      email: adminEmail,
-      password: adminPassword,
-      firstName: firmAdmin.firstName,
-      lastName: firmAdmin.lastName,
-    },
     ...additionalUsers.map((u) => ({
       firmRole: u.role.trim(),
       email: u.email.trim(),
@@ -62,11 +56,23 @@ export async function runFirmSetup({ firmPayload, firmAdmin, additionalUsers }) 
       firstName: u.firstName,
       lastName: u.lastName,
     })),
+    {
+      firmRole: 'firm_admin',
+      email: adminEmail,
+      password: adminPassword,
+      firstName: firmAdmin.firstName,
+      lastName: firmAdmin.lastName,
+    },
   ];
-
+ 
+  const additionalCount = additionalUsers.length;
   let created = 0;
   for (const u of usersToCreate) {
     created += 1;
+    const isAdditional = created <= additionalCount;
+    const userLabel = isAdditional
+      ? `Additional user ${created} (${u.email})`
+      : `Firm Admin (${u.email})`;
     try {
       await signUpWithEmail(u.email, u.password, {
         firstName: u.firstName.trim(),
@@ -78,19 +84,18 @@ export async function runFirmSetup({ firmPayload, firmAdmin, additionalUsers }) 
     } catch (err) {
       const reason =
         err?.code === 'profile/save-failed'
-          ? 'profile could not be saved'
+          ? 'profile could not be saved to the database'
           : getAuthErrorMessage(err);
-      const position =
-        usersToCreate.length > 1
-          ? ` (user ${created} of ${usersToCreate.length})`
-          : '';
       const e = new Error(
-        `Could not create account for ${u.email}${position}: ${reason}. The firm may already exist in the database.`,
+        `Could not create account for ${userLabel}: ${reason}. The email may already exist in the database.`,
       );
       e.step = 'user-create';
       throw e;
     }
   }
 
-  return signInWithEmail(adminEmail, adminPassword);
+  const adminUser = await signInWithEmail(adminEmail, adminPassword);
+  // (Function meaning): Force a fresh ID token so [AuthContext.js] `checkFirmAdmin` does not get 401 right after firm setup sign-in.
+  await adminUser.getIdToken(true);
+  return adminUser;
 }
