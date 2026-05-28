@@ -2,10 +2,10 @@
  * HTTP client for the dummy client list from `on_request_example` in `functions/main.py`.
  *
  * Response shape from Python (dummy endpoint):
- *   `{ clients: [{ SystemID, FirstName, LastName, AUM?, StartDate?, ... }] }`
+ *   `{ clients: [{ ClientID, FirstName, LastName, AUM?, StartDate?, ... }] }`
  *
  * This module maps that to UI rows:
- *   `{ id, label, aum?, startDate? }[]` — `id` = SystemID, `label` = full name; optional `AUM` / `StartDate` from API for cards.
+ *   `{ id, label, aum?, startDate? }[]` — `id` = ClientID, `label` = full name; optional `AUM` / `StartDate` from API for cards.
  *
  * Import `fetchDummyClientsFromMainPy` from UI (SearchBar, LandingPage, etc.).
  * Import `getClientsEndpointUrl` only if you need the raw URL elsewhere.
@@ -54,9 +54,12 @@ export function getClientsEndpointUrl(projectId, region) {
 /**
  * Fetches clients and returns rows ready for a `<select>`.
  *
+ * @param {{ getIdToken: () => Promise<string> } | null | undefined} user - the signed-in Firebase user object; when provided its ID token is sent as `Authorization: Bearer <token>` so the backend can identify the firm.
  * @returns {Promise<{ id: string, label: string, aum?: number, startDate?: string }[]>}
  */
-export async function fetchDummyClientsFromMainPy() {
+// (Function meaning): Ask the Firebase backend for this user's firm-scoped client list; build the URL from env variables or dev defaults, attach the user's login proof token in the Authorization header, then parse and return the rows — or an empty array if anything goes wrong.
+// (External references): URL is built by [getClientsEndpointUrl] above; the backend endpoint is `on_request_example` in [functions/main.py]; the returned rows are consumed by [LandingPage.js] and [SearchBar.js].
+export async function fetchDummyClientsFromMainPy(user) {
   const region = process.env.REACT_APP_FIREBASE_FUNCTIONS_REGION || DEFAULT_FUNCTIONS_REGION;
   const projectId =
     process.env.REACT_APP_FIREBASE_PROJECT_ID ||
@@ -69,7 +72,18 @@ export async function fetchDummyClientsFromMainPy() {
   }
   const url = getClientsEndpointUrl(projectId, region);
 
-  const res = await fetch(url);
+  // (Function meaning): If a signed-in user object was passed in, ask Firebase for a fresh proof-of-login token string and attach it to the request headers so the server can verify who is asking; if no user was given, send the request without an Authorization header (server will return 401).
+  const headers = {};
+  if (user) {
+    try {
+      const token = await user.getIdToken();
+      headers['Authorization'] = `Bearer ${token}`;
+    } catch {
+      console.warn('[clientfetch] Could not get ID token; request will be unauthenticated.');
+    }
+  }
+
+  const res = await fetch(url, { headers });
   if (!res.ok) {
     console.warn('[clientfetch] HTTP', res.status, url);
     return [];
@@ -90,7 +104,7 @@ export async function fetchDummyClientsFromMainPy() {
         ? undefined
         : Number(rawAum);
     return {
-      id: String(row.SystemID),
+      id: String(row.ClientID),
       label: `${row.FirstName} ${row.LastName}`.trim(),
       ...(Number.isFinite(aum) ? { aum } : {}),
       ...(row.StartDate != null && row.StartDate !== ''

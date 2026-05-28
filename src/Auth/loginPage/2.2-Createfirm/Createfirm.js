@@ -91,12 +91,6 @@ function createAdditionalUserRow() {
 // (Function meaning): Build the object we send to `save_firm` when the form passes validation.
 function buildFirmPayload(form, firmRoles, additionalUsers) {
   const normalizedRoles = normalizeFirmRolesForSave(firmRoles);
-  const approvedMembers = additionalUsers.map((u) => ({
-    firmRole: u.role.trim(),
-    firstName: u.firstName.trim(),
-    lastName: u.lastName.trim(),
-    email: u.email.trim(),
-  }));
 
   return {
     firmName: form.firmName.trim(),
@@ -116,7 +110,6 @@ function buildFirmPayload(form, firmRoles, additionalUsers) {
     firmRoles: normalizedRoles,
     creatorFirmRole: 'firm_admin',
     adminAcknowledged: form.adminAcknowledged,
-    approvedMembers,
   };
 }
 

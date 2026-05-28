@@ -50,13 +50,15 @@ function LandingPage() {
   // (Function meaning): `fetchDummyClientsFromMainPy` runs in the browser and calls `on_request_example` in [functions/main.py]; the JSON `clients` array becomes `id` / `label` rows for [MainLanding.js] → [Clienttask.js] → [Clientbar.js].
   const pullClientsFromBackend = useCallback(async () => {
     try {
-      const rows = await fetchDummyClientsFromMainPy();
+      // (Function meaning): Pass the signed-in `user` object so [clientfetch.js] can attach the Firebase login token to the request — the backend now requires it to find the right firm's clients.
+      // (External references): `user` comes from [useAuth] (AuthContext) at the top of this component; `fetchDummyClientsFromMainPy` is defined in [src/unAuth/Component/API/clientfetch.js].
+      const rows = await fetchDummyClientsFromMainPy(user);
       setClients(rows);
     } catch (e) {
       console.error('[LandingPage] fetch clients', e);
       setClients([]);
     }
-  }, []);
+  }, [user]);
 
   useEffect(() => {
     pullClientsFromBackend();

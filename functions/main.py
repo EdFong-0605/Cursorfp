@@ -94,6 +94,16 @@ def _mongodb_firms_collection():
      return client[database_name][collection_name]
 
 
+def _mongodb_clients_collection():
+     # (Function meaning): Connect to MongoDB using the secret URI from env, pick the database name from env (or use "User" as the default), pick the collection name from env (or use "Clients" as the default), and return that collection object so callers can run queries against it.
+     # (External references): Uses the same MONGODB_URI and MONGODB_DATABASE env variables as [_mongodb_users_collection] and [_mongodb_firms_collection] above; callers include [on_request_example] below.
+     mongo_uri = os.environ.get("MONGODB_URI")
+     database_name = os.environ.get("MONGODB_DATABASE", "User")
+     collection_name = os.environ.get("MONGODB_CLIENTS_COLLECTION", "Clients")
+     client = MongoClient(mongo_uri)
+     return client[database_name][collection_name]
+
+
 _ALLOWED_LOGIN_EVENT_TYPES = frozenset({"sign_in", "sign_up", "inactivity_logout"})
 _SYSTEM_FIRM_ROLE = "firm_admin"
 _ALLOWED_FIRM_ACCESS = frozenset({"full", "standard", "read_only"})
@@ -179,55 +189,54 @@ def _json_error(
 
 @https_fn.on_request()
 def on_request_example(req: https_fn.Request) -> https_fn.Response:
-     """HTTP JSON used by the React app (`fetchDummyClientsFromMainPy`); returns every dummy client row (no limit)."""
+     """GET firm-scoped clients from MongoDB for the signed-in user; returns `{ clients: [...] }`."""
+     # (Function meaning): If the browser sends a pre-flight OPTIONS request (asking "am I allowed to talk to you?"), reply immediately with the CORS permission headers and an empty 204 body — no auth or DB work needed.
+     # (External references): _cors_headers_for_local_web is defined earlier in this file.
      if req.method == "OPTIONS":
           return https_fn.Response("", status=204, headers=_cors_headers_for_local_web(req))
 
-     dummy_clients = [
-          {
-               "SystemID": "SYS-1001",
-               "FirstName": "John",
-               "LastName": "Johnson",
-               "Age": 42,
-               "Sex": "Male",
-               "HeadOfHousehold": True,
-               "AUM": 2_340_000,
-               "StartDate": "2019-03-15",
-          },
-          {
-               "SystemID": "SYS-1002",
-               "FirstName": "Ariana",
-               "LastName": "Lopez",
-               "Age": 34,
-               "Sex": "Female",
-               "HeadOfHousehold": False,
-               "AUM": 890_500,
-               "StartDate": "2021-07-22",
-          },
-          {
-               "SystemID": "SYS-1003",
-               "FirstName": "daniel",
-               "LastName": "Kim",
-               "Age": 28,
-               "Sex": "Male",
-               "HeadOfHousehold": False,
-               "AUM": 456_789,
-               "StartDate": "2023-01-10",
-          },
-          {
-               "SystemID": "SYS-1004",
-               "FirstName": "Brian",
-               "LastName": "Johnson",
-               "Age": 91,
-               "Sex": "Male",
-               "HeadOfHousehold": True,
-               "AUM": 5_120_000,
-               "StartDate": "2016-11-01",
-          },
-     ]
+     # (Function meaning): This endpoint only answers GET requests; anything else (POST, PUT, DELETE, etc.) gets a 405 "Method Not Allowed" error back to the caller.
+     if req.method != "GET":
+          return _json_error(req, "Method not allowed", 405)
 
+     # (Function meaning): Read the Authorization header, check it is a valid Firebase login token, and unpack it; if the header is missing or the token is fake/expired, send back a 401 "Unauthorized" error so the browser knows it must sign in first.
+     # (External references): _verify_bearer_token is defined earlier in this file.
+     decoded = _verify_bearer_token(req)
+     if not decoded:
+          return _json_error(req, "Missing or invalid Authorization header", 401)
+
+     # (Function meaning): Pull the user's unique ID (uid) out of the decoded token; if it is somehow absent, refuse the request with a 401.
+     uid = decoded.get("uid")
+     if not uid:
+          return _json_error(req, "Invalid token payload", 401)
+
+     # (Function meaning): Look up this user's profile document in the EndUser collection using their uid as the document key; only fetch the firmId field (we don't need the rest) to keep the query fast.
+     # (External references): _mongodb_users_collection is defined earlier in this file; _id in MongoDB equals the uid stored when the profile was saved in save_user_profile below.
+     try:
+          users = _mongodb_users_collection()
+          user_doc = users.find_one({"_id": uid}, {"firmId": 1})
+     except Exception:
+          return _json_error(req, "Could not read user profile from database", 503)
+
+     # (Function meaning): If no profile document was found for this uid, or if the document exists but has no firmId, return a 403 "Forbidden" error — we cannot filter clients without knowing which firm this user belongs to.
+     if not user_doc:
+          return _json_error(req, "User profile not found", 404)
+     user_firm_id = str(user_doc.get("firmId", "")).strip()
+     if not user_firm_id:
+          return _json_error(req, "User profile has no firmId", 403)
+
+     # (Function meaning): Query the Clients collection for every document whose FirmId field exactly matches this user's firm; {"_id": 0} tells MongoDB to leave the internal _id field out of every result so the JSON stays clean and the frontend never sees it.
+     # (External references): _mongodb_clients_collection is defined just above this function in this file.
+     try:
+          clients_col = _mongodb_clients_collection()
+          client_docs = list(clients_col.find({"FirmId": user_firm_id}, {"_id": 0}))
+     except Exception:
+          return _json_error(req, "Could not read clients from database", 503)
+
+     # (Function meaning): Wrap the list of client documents in a {"clients": [...]} object and send it back as JSON — this exact shape is what [clientfetch.js] expects when it reads `data.clients`.
+     # (External references): Frontend mapping in [src/unAuth/Component/API/clientfetch.js] reads `data.clients` and maps SystemID, FirstName, LastName from each item.
      return https_fn.Response(
-          json.dumps({"clients": dummy_clients}, indent=2),
+          json.dumps({"clients": client_docs}, indent=2),
           mimetype="application/json",
           headers=_cors_headers_for_local_web(req),
      )
