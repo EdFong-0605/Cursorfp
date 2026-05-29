@@ -1,15 +1,45 @@
 /*
  * (External references):
- * - Parents: [Clienttask.js] (`variant="list"`), [ProgressBar.js] (`variant="progress"`).
+ * - Parents: [Clienttask.js] (`variant="list"`), [ProgressBar.js] (`variant="progress"`) pass `columns`.
  * - Styles: [taskformat.css].
- * - Layout-only skeleton: six-column table, header toolbar slots — no task cell content yet.
+ * - Layout-only skeleton: column headers and rows come from the `columns` prop each parent defines.
  */
 import './taskformat.css';
 
 // (Function meaning): How many blank rows to draw before real `tasks` arrive — six matches the reference screenshot row count.
 const DEFAULT_SKELETON_ROW_COUNT = 6;
 
-// (Function meaning): A gray rounded bar that stands in for text or a badge — `width` picks how long the bar is; `shape` is `"bar"` for normal lines or `"pill"` for status/priority slots.
+// (Function meaning): Small circular-arrow icon drawn with SVG — same shape as the refresh button in [Clientbar.js]; `currentColor` lets CSS control the icon color.
+function RefreshIcon() {
+  return (
+    <svg
+      className="task-format__refresh-icon"
+      viewBox="0 0 24 24"
+      width="12"
+      height="13"
+      aria-hidden="true"
+    >
+      <path
+        d="M20 6v5h-5"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.9"
+      />
+      <path
+        d="M20 11a8 8 0 1 0 2.34 5.66"
+        fill="none"
+        stroke="currentColor"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="1.9"
+      />
+    </svg>
+  );
+}
+
+// (Function meaning): A gray rounded bar that stands in for text or a badge — `width` picks how long the bar is; `shape` is `"bar"` for normal lines or `"pill"` for badge-shaped slots.
 function PlaceholderLine({ width = 'md', shape = 'bar' }) {
   return (
     <span
@@ -19,45 +49,58 @@ function PlaceholderLine({ width = 'md', shape = 'bar' }) {
   );
 }
 
-// (Function meaning): One table row with six columns; each column holds a placeholder bar; odd/even rows get different background classes for alternating stripes.
-function TaskRowSkeleton({ rowIndex }) {
-  // (Function meaning): Even index (0, 2, 4…) uses stripe A; odd index (1, 3, 5…) uses stripe B so neighboring rows look slightly different.
+// (Function meaning): Turn a column's `placeholder` setting into `{ width, shape }` for [PlaceholderLine] — `"pill"` becomes a pill bar; `"lg"` / `"md"` / `"sm"` become normal bars.
+function placeholderProps(placeholder = 'md') {
+  if (placeholder === 'pill') {
+    return { width: 'pill', shape: 'pill' };
+  }
+  return { width: placeholder, shape: 'bar' };
+}
+
+// (Function meaning): Join every column's `width` (or `"1fr"` if missing) into one CSS grid string like `"2.4fr 1.25fr 1fr"`.
+function buildGridTemplate(columns) {
+  return columns.map((col) => col.width || '1fr').join(' ');
+}
+
+// (Function meaning): One table row — loops over `columns` and draws one empty placeholder cell per column; odd/even rows get alternating stripe backgrounds.
+function TaskRowSkeleton({ columns, rowIndex }) {
+  // (Function meaning): Even index (0, 2, 4…) uses stripe A; odd index uses stripe B so neighboring rows look slightly different.
   const stripeClass =
     rowIndex % 2 === 0
       ? ' task-format__row--stripe-a'
       : ' task-format__row--stripe-b';
 
+  const gridStyle = { gridTemplateColumns: buildGridTemplate(columns) };
+
   return (
     <li
       className={`task-format__row task-format__row--skeleton${stripeClass}`}
+      style={gridStyle}
       aria-hidden="true"
     >
-      <div className="task-format__cell task-format__cell--task">
-        <PlaceholderLine width="lg" />
-      </div>
-      <div className="task-format__cell task-format__cell--client">
-        <PlaceholderLine width="md" />
-      </div>
-      <div className="task-format__cell task-format__cell--category">
-        <PlaceholderLine width="sm" />
-      </div>
-      <div className="task-format__cell task-format__cell--status">
-        <PlaceholderLine width="pill" shape="pill" />
-      </div>
-      <div className="task-format__cell task-format__cell--due">
-        <PlaceholderLine width="md" />
-      </div>
-      <div className="task-format__cell task-format__cell--priority">
-        <PlaceholderLine width="pill" shape="pill" />
-      </div>
+      {columns.map((col) => {
+        const alignClass =
+          col.align === 'center' ? ' task-format__cell--align-center' : '';
+        const line = placeholderProps(col.placeholder);
+
+        return (
+          <div
+            key={col.key}
+            className={`task-format__cell task-format__cell--${col.key}${alignClass}`}
+          >
+            <PlaceholderLine width={line.width} shape={line.shape} />
+          </div>
+        );
+      })}
     </li>
   );
 }
 
-// (Function meaning): Shared task-table shell — rounded card, title + empty action slots on top, sticky six-column headers, then skeleton rows; `variant` adds a CSS hook for list vs progress styling later.
+// (Function meaning): Shared task-table shell — parents pass `columns` (key, label, width, align, placeholder); this file only draws the grid, headers, and skeleton rows.
 function TaskFormat({
   variant = 'list',
   hasClient = false,
+  columns = [],
   tasks = [],
   rowCount = DEFAULT_SKELETON_ROW_COUNT,
   sectionTitle = '',
@@ -79,6 +122,8 @@ function TaskFormat({
 
   // (Function meaning): One skeleton row per real task when data exists; otherwise draw `rowCount` placeholder rows (default six).
   const rowsToDraw = tasks.length > 0 ? tasks.length : rowCount;
+  const gridStyle = { gridTemplateColumns: buildGridTemplate(columns) };
+  const colCount = columns.length;
 
   return (
     <div className={rootClass} aria-label={sectionTitle || 'Tasks'}>
@@ -87,8 +132,11 @@ function TaskFormat({
           <header className="task-format__header">
             <div className="task-format__header-main">
               <h2 className="task-format__section-title">{sectionTitle}</h2>
-              {/* (Function meaning): “Start Task” and the three-dot menu are visible placeholders (no click actions yet). */}
+              {/* (Function meaning): Refresh, Start Task, and three-dot menu are visible placeholders (no click actions yet). */}
               <div className="task-format__header-actions">
+                <button type="button" className="task-format__refresh-btn" aria-label="Refresh tasks">
+                  <RefreshIcon />
+                </button>
                 <button type="button" className="task-format__start-btn">
                   Start Task
                 </button>
@@ -101,21 +149,41 @@ function TaskFormat({
         ) : null}
 
         <div className="task-format__scroll">
-          {/* (Function meaning): Sticky six-column label row — same grid as data rows; Status and Priority headings sit centered like the reference UI. */}
-          <div className="task-format__col-header" role="row" aria-hidden="true">
-            <div className="task-format__col task-format__col--task">Task</div>
-            <div className="task-format__col task-format__col--client">Client</div>
-            <div className="task-format__col task-format__col--category">Category</div>
-            <div className="task-format__col task-format__col--status">Status</div>
-            <div className="task-format__col task-format__col--due">Due Date</div>
-            <div className="task-format__col task-format__col--priority">Priority</div>
-          </div>
+          {colCount > 0 ? (
+            <>
+              {/* (Function meaning): Sticky header row — one label per entry in `columns`; grid widths match the skeleton rows below. */}
+              <div
+                className="task-format__col-header"
+                style={gridStyle}
+                role="row"
+                aria-hidden="true"
+              >
+                {columns.map((col) => {
+                  const alignClass =
+                    col.align === 'center' ? ' task-format__col--align-center' : '';
 
-          <ul className="task-format__list" role="list" aria-label="Task rows placeholder">
-            {Array.from({ length: rowsToDraw }, (_, index) => (
-              <TaskRowSkeleton key={`skeleton-row-${index}`} rowIndex={index} />
-            ))}
-          </ul>
+                  return (
+                    <div
+                      key={col.key}
+                      className={`task-format__col task-format__col--${col.key}${alignClass}`}
+                    >
+                      {col.label}
+                    </div>
+                  );
+                })}
+              </div>
+
+              <ul className="task-format__list" role="list" aria-label="Task rows placeholder">
+                {Array.from({ length: rowsToDraw }, (_, index) => (
+                  <TaskRowSkeleton
+                    key={`skeleton-row-${index}`}
+                    columns={columns}
+                    rowIndex={index}
+                  />
+                ))}
+              </ul>
+            </>
+          ) : null}
         </div>
       </div>
     </div>
