@@ -1,0 +1,38 @@
+/* Dark strip at top of main column (same palette as Clientbar). */
+
+.client-name-top {
+  box-sizing: border-box;
+  flex-shrink: 0;
+  width: 100%;
+  min-height: 52px;
+  background-color: #161b22;
+  border-bottom: 1px solid rgba(43, 58, 73, 0.85);
+}
+
+.client-name-top__inner {
+  box-sizing: border-box;
+  min-height: 52px;
+  padding: 14px 16px;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.client-name-top__label {
+  font-size: 0.875rem;
+  font-weight: 600;
+  letter-spacing: 0.01em;
+  line-height: 1.25;
+  color: #f0f4f8;
+  text-align: left;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+}
+
+.client-name-top__label--empty {
+  font-weight: 500;
+  color: #8b9cb3;
+}

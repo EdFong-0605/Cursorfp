@@ -148,7 +148,11 @@ function LandingPage() {
         ) : isFirmAdmin && adminViewOpen ? (
           <Admin />
         ) : (
-          <MainLanding clients={clients} showClientTask={clientTaskOpen} />
+          <MainLanding
+            clients={clients}
+            showClientTask={clientTaskOpen}
+            onRefreshClients={pullClientsFromBackend}
+          />
         )}
         <Footer />
       </div>

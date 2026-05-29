@@ -6,11 +6,11 @@
  */
 import { useEffect, useState } from 'react';
 import Clienttask from '../2.2-ClientTask/Clienttask';
-import ProgressBar from '../2.3-Progress/ProgressBar';
+import ProgressBar from '../2.3-ProgressTracker/ProgressBar';
 import './MainLanding.css';
 
-// (Function meaning): `clients` is the list the parent page hands down; `= []` means “if missing, use an empty list” so we never crash on undefined. `showClientTask` comes from [LandingPage.js] after the user taps the person icon in [NavBar.js]; when `true` you see only [Clienttask.js], when `false` you see only [ProgressBar.js] — never both in the same main pane.
-function MainLanding({ clients = [], showClientTask = false }) {
+// (Function meaning): `clients` is the list the parent page hands down; `= []` means “if missing, use an empty list” so we never crash on undefined. `showClientTask` comes from [LandingPage.js] after the user taps the person icon in [NavBar.js]; when `true` you see only [Clienttask.js], when `false` you see only [ProgressBar.js] — never both in the same main pane; `onRefreshClients` is the parent callback that re-fetches clients when the sidebar refresh button is pressed.
+function MainLanding({ clients = [], showClientTask = false, onRefreshClients }) {
   // (Function meaning): `selectedClientId` = which client looks chosen; `setSelectedClientId` = React’s button to change that value. We start at null until the effect picks someone.
   const [selectedClientId, setSelectedClientId] = useState(null);
 
@@ -43,12 +43,14 @@ function MainLanding({ clients = [], showClientTask = false }) {
             clients={clients}
             selectedClientId={selectedClientId}
             onSelectClient={setSelectedClientId}
+            onRefreshClients={onRefreshClients}
           />
         ) : (
           <ProgressBar
             clients={clients}
             selectedClientId={selectedClientId}
             onSelectClient={setSelectedClientId}
+            onRefreshClients={onRefreshClients}
           />
         )}
       </div>

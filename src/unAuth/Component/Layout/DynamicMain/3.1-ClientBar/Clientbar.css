@@ -5,19 +5,42 @@
   flex: 0 0 clamp(148px, 22%, 300px);
   width: clamp(148px, 22%, 300px);
   min-width: 0;
+  min-height: 0;
+  height: 100%;
+  align-self: stretch;
   background-color: #161b22;
   border-right: 1px solid #2b3a49;
   display: flex;
   flex-direction: column;
-  padding: 10px 8px 12px;
+  padding: 10px 0 12px 8px;
   overflow: hidden;
+}
+
+.client-bar__page {
+  flex-shrink: 0;
+  padding: 2px 8px 10px 6px;
+  border-bottom: 1px solid rgba(43, 58, 73, 0.85);
+  margin-bottom: 8px;
+}
+
+.client-bar__page-name {
+  margin: 0;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  line-height: 1.3;
+  color: #e6edf3;
 }
 
 .client-bar__head {
   flex-shrink: 0;
-  padding: 4px 6px 10px;
+  padding: 4px 8px 10px 6px;
   border-bottom: 1px solid rgba(43, 58, 73, 0.85);
   margin-bottom: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
 }
 
 .client-bar__title {
@@ -27,6 +50,112 @@
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: #8b9cb3;
+}
+
+.client-bar__refresh {
+  flex-shrink: 0;
+  width: 30px;
+  height: 30px;
+  transform: translateY(-2px);
+  padding: 0;
+  border: 0;
+  border-radius: 999px;
+  background: transparent;
+  color: #8b9cb3;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  overflow: visible;
+  cursor: pointer;
+  transition:
+    color 0.18s ease,
+    background-color 0.18s ease;
+}
+
+.client-bar__refresh:hover:not(:disabled) {
+  color: #d6e2ef;
+  background-color: rgba(88, 166, 255, 0.08);
+}
+
+.client-bar__refresh:focus-visible {
+  outline: 2px solid #58a6ff;
+  outline-offset: 2px;
+}
+
+.client-bar__refresh:disabled {
+  opacity: 0.75;
+  cursor: default;
+}
+
+.client-bar__refresh-icon {
+  display: block;
+  transform: translateY(-1px);
+}
+
+.client-bar__refresh-dots {
+  display: inline-flex;
+  align-items: flex-end;
+  gap: 4px;
+  height: 12px;
+}
+
+.client-bar__refresh-dot {
+  width: 4px;
+  height: 4px;
+  border-radius: 999px;
+  background-color: currentColor;
+  animation: client-bar-refresh-wave 0.7s ease-in-out infinite;
+}
+
+.client-bar__refresh-dot:nth-child(2) {
+  animation-delay: 0.12s;
+}
+
+.client-bar__refresh-dot:nth-child(3) {
+  animation-delay: 0.24s;
+}
+
+@keyframes client-bar-refresh-wave {
+  0%,
+  60%,
+  100% {
+    transform: translateY(0);
+    opacity: 0.55;
+  }
+  30% {
+    transform: translateY(-4px);
+    opacity: 1;
+  }
+}
+
+/* (Function meaning): Scroll area reaches the right edge of the rail so the grey bar sits by the border, not left in empty space. */
+.client-bar__scroll {
+  flex: 1 1 auto;
+  min-height: 0;
+  overflow-y: auto;
+  overflow-x: hidden;
+  margin-right: 0;
+  padding-right: 2px;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(139, 156, 179, 0.65) transparent;
+}
+
+/* (Function meaning): Scroll track stays invisible (transparent); thin grey thumb hugs the right side (Chrome, Edge, Safari). */
+.client-bar__scroll::-webkit-scrollbar {
+  width: 6px;
+}
+
+.client-bar__scroll::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.client-bar__scroll::-webkit-scrollbar-thumb {
+  background-color: rgba(139, 156, 179, 0.55);
+  border-radius: 999px;
+}
+
+.client-bar__scroll::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(139, 156, 179, 0.85);
 }
 
 .client-bar__empty {
@@ -40,14 +169,10 @@
 .client-bar__list {
   list-style: none;
   margin: 0;
-  padding: 0;
+  padding: 0 6px 0 0;
   display: flex;
   flex-direction: column;
   gap: 8px;
-  overflow-y: auto;
-  overflow-x: hidden;
-  min-height: 0;
-  flex: 1 1 auto;
 }
 
 .client-bar__item {

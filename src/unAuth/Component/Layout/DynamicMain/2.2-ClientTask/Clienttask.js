@@ -5,28 +5,33 @@
  * - Styles: [clienttask.css].
  */
 import Clientbar from '../3.1-ClientBar/Clientbar';
+import ClientNameTop from '../3.3-Clientnametop/clientnametop';
+import TaskFormat from '../3.4-TaskFormat/taskformat';
 import './clienttask.css';
 
-// (Function meaning): One horizontal band: left = scrollable client cards; right = placeholder until real task UI exists.
-function Clienttask({ clients = [], selectedClientId, onSelectClient }) {
+// (Function meaning): One horizontal band: left = scrollable client cards; right = placeholder until real task UI exists; `onRefreshClients` lets the left bar ask for the newest client list.
+function Clienttask({ clients = [], selectedClientId, onSelectClient, onRefreshClients }) {
   const selected = clients.find((c) => c.id === selectedClientId);
 
   return (
-    <section className="client-task-panel" aria-label="Client tasks">
+    <section className="client-task-panel" aria-label="Client Tasks">
       <Clientbar
         clients={clients}
         selectedClientId={selectedClientId}
         onSelectClient={onSelectClient}
+        onRefresh={onRefreshClients}
+        pageKey="tasks"
       />
       <div className="client-task-panel__body">
-        {selected ? (
-          <div>
-            <p className="client-task-panel__title">Tasks for {selected.label}</p>
-            <p className="client-task-panel__meta">Task list will go here.</p>
-          </div>
-        ) : (
-          <p className="client-task-panel__meta">Pick a client to see tasks.</p>
-        )}
+        <ClientNameTop clientLabel={selected?.label ?? null} />
+        <div className="client-task-panel__content">
+          <TaskFormat
+            variant="list"
+            hasClient={Boolean(selected)}
+            sectionTitle="Tasks"
+            emptyNoClientMessage="Pick a client to see tasks."
+          />
+        </div>
       </div>
     </section>
   );
