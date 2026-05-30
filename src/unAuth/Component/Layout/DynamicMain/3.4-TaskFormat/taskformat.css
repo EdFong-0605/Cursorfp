@@ -231,6 +231,38 @@
   background-color: rgba(139, 156, 179, 0.22);
 }
 
+/* ─── Loading shimmer (wave animation while tasks are being fetched) ────────── */
+
+/* (Function meaning): Slide a bright band across each bar by moving its gradient from the right edge to the left edge over and over, which reads as a "loading wave". */
+@keyframes task-format-shimmer {
+  0% {
+    background-position: 200% 0;
+  }
+  100% {
+    background-position: -200% 0;
+  }
+}
+
+/* (Function meaning): Only the placeholder bars inside a list marked `--loading` get the moving gradient; the gradient is twice as wide as the bar so there is room to slide, and it loops forever until the real rows replace it. */
+.task-format__list--loading .task-format__line {
+  background-image: linear-gradient(
+    90deg,
+    rgba(139, 156, 179, 0.16) 25%,
+    rgba(139, 156, 179, 0.42) 50%,
+    rgba(139, 156, 179, 0.16) 75%
+  );
+  background-size: 200% 100%;
+  animation: task-format-shimmer 1.4s ease-in-out infinite;
+}
+
+/* (Function meaning): For people who ask their device to reduce motion, switch off the sliding wave and just show a steady gray bar so nothing flickers. */
+@media (prefers-reduced-motion: reduce) {
+  .task-format__list--loading .task-format__line {
+    animation: none;
+    background-image: none;
+  }
+}
+
 .task-format__row--stripe-b .task-format__line {
   background-color: rgba(139, 156, 179, 0.28);
 }
@@ -259,6 +291,87 @@
   border-radius: 999px;
 }
 
+/* ─── Real data rows (live tasks list) ─────────────────────────────────────── */
+
+/* (Function meaning): A real row carries actual task data; it gets the same min-height and rounded corners as skeleton rows so the two modes look identical in layout. */
+.task-format__row--data {
+  align-items: center;
+}
+
+/* (Function meaning): Plain text inside a cell (task title, assigned date); clip overflow with an ellipsis so long names never push the grid out of shape. */
+.task-format__text {
+  min-width: 0;
+  font-size: 0.875rem;
+  color: #e6edf3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* (Function meaning): The live day counter reads a touch lighter so it looks like supporting info rather than a heading. */
+.task-format__text--days {
+  color: #b8c4d4;
+  font-variant-numeric: tabular-nums;
+}
+
+/* (Function meaning): The leftmost Mark complete button — a compact green pill that turns slightly brighter on hover and dims while its request is saving. */
+.task-format__complete-btn {
+  box-sizing: border-box;
+  height: 30px;
+  padding: 0 12px;
+  border: 1px solid rgba(63, 185, 80, 0.6);
+  border-radius: 8px;
+  background-color: #238636;
+  color: #f0f4f8;
+  font: inherit;
+  font-size: 0.8125rem;
+  font-weight: 600;
+  line-height: 1;
+  white-space: nowrap;
+  cursor: pointer;
+}
+
+.task-format__complete-btn:hover {
+  background-color: #2ea043;
+}
+
+.task-format__complete-btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+/* (Function meaning): A small rounded badge used for Priority; neutral colors by default, overridden by the priority-specific classes below. */
+.task-format__pill {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 64px;
+  height: 22px;
+  padding: 0 12px;
+  border-radius: 999px;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  color: #c9d4e2;
+  background-color: rgba(139, 156, 179, 0.22);
+}
+
+/* (Function meaning): High priority reads red, medium amber, low green, so urgency is obvious at a glance. */
+.task-format__pill--priority-high {
+  color: #ffb1b1;
+  background-color: rgba(248, 81, 73, 0.18);
+}
+
+.task-format__pill--priority-medium {
+  color: #f5c98a;
+  background-color: rgba(210, 153, 34, 0.2);
+}
+
+.task-format__pill--priority-low {
+  color: #aee0b6;
+  background-color: rgba(63, 185, 80, 0.18);
+}
+
 /* ─── Empty state (no client selected) ─────────────────────────────────────── */
 
 .task-format__empty {
@@ -276,4 +389,10 @@
 
 .task-format__empty--no-client {
   min-height: 140px;
+}
+
+/* (Function meaning): The "no tasks for this client" message sits below the column header, so give it some breathing room while keeping the muted look. */
+.task-format__empty--no-tasks {
+  min-height: 120px;
+  padding: 28px 22px;
 }

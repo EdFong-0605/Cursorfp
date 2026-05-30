@@ -104,6 +104,16 @@ def _mongodb_clients_collection():
      return client[database_name][collection_name]
 
 
+def _mongodb_tasks_collection():
+     # (Function meaning): Open a MongoDB connection with the secret URI from env, choose the database name from env (or "User" by default to match every other helper above), choose the task collection name from env (or "Task" by default), and hand back that collection so callers can read and update task documents.
+     # (External references): Shares the same MONGODB_URI and MONGODB_DATABASE env variables as [_mongodb_clients_collection] above; callers include [get_my_client_tasks] and [complete_task_step] below; the document shape (TaskID, FirmID, ClientID, Steps[...]) matches what is stored from the task-creation flow.
+     mongo_uri = os.environ.get("MONGODB_URI")
+     database_name = os.environ.get("MONGODB_DATABASE", "User")
+     collection_name = os.environ.get("MONGODB_TASKS_COLLECTION", "Task")
+     client = MongoClient(mongo_uri)
+     return client[database_name][collection_name]
+
+
 _ALLOWED_LOGIN_EVENT_TYPES = frozenset({"sign_in", "sign_up", "inactivity_logout"})
 _SYSTEM_FIRM_ROLE = "firm_admin"
 _ALLOWED_FIRM_ACCESS = frozenset({"full", "standard", "read_only"})
@@ -576,6 +586,320 @@ def log_login(req: https_fn.Request) -> https_fn.Response:
 
      return https_fn.Response(
           json.dumps({"ok": True}),
+          status=200,
+          mimetype="application/json",
+          headers=cors,
+     )
+
+
+# (Function meaning): The three status words a step can hold, written down once so the rest of the file never has to guess the spelling — a step starts as "not_started", becomes "in_progress" while someone works on it, and ends as "completed".
+_TASK_STEP_NOT_STARTED = "not_started"
+_TASK_STEP_IN_PROGRESS = "in_progress"
+_TASK_STEP_COMPLETED = "completed"
+# (Function meaning): The word that marks a whole task as finished; we set OverallStatus to this once every step is completed.
+_TASK_OVERALL_COMPLETED = "completed"
+
+
+def _to_iso(value):
+     # (Function meaning): Turn a value into something JSON can safely carry: if it is a real date/time object, hand back its ISO text like "2026-05-22T00:00:00+00:00"; if it is already empty (None), keep it as None; anything else is turned into plain text.
+     # (External references): Used by [get_my_client_tasks] below because MongoDB stores dates as datetime objects, and Python's json.dumps cannot serialize a raw datetime.
+     if value is None:
+          return None
+     if isinstance(value, datetime):
+          return value.isoformat()
+     return str(value)
+
+
+def _current_active_step(steps):
+     # (Function meaning): Walk through a task's list of steps and return the one the team is actually working on now — defined as the step with the smallest StepNumber whose Status is not yet "completed"; if every step is finished (or the list is empty) hand back None.
+     # (External references): Called by [get_my_client_tasks] and [complete_task_step] below; the "lowest unfinished StepNumber" rule is the agreed definition of the current step.
+     if not isinstance(steps, list):
+          return None
+     unfinished = [
+          step
+          for step in steps
+          if isinstance(step, dict)
+          and step.get("Status") != _TASK_STEP_COMPLETED
+     ]
+     if not unfinished:
+          return None
+     return min(unfinished, key=lambda step: step.get("StepNumber", 0))
+
+
+def _in_progress_step_for_user(steps, uid):
+     # (Function meaning): Look through a task's steps and return the one that is BOTH already marked "in_progress" AND assigned to this user; if more than one matches (which should not normally happen) pick the lowest StepNumber, and if none match return None so the task is skipped.
+     # (External references): Called by [get_my_client_tasks] below; this is the rule that makes the client task list show only steps that are actively in progress for the signed-in user, never "not_started" ones.
+     if not isinstance(steps, list):
+          return None
+     mine_in_progress = [
+          step
+          for step in steps
+          if isinstance(step, dict)
+          and step.get("Status") == _TASK_STEP_IN_PROGRESS
+          and str(step.get("AssignedToUserID", "")).strip() == uid
+     ]
+     if not mine_in_progress:
+          return None
+     return min(mine_in_progress, key=lambda step: step.get("StepNumber", 0))
+
+
+@https_fn.on_request()
+def get_my_client_tasks(req: https_fn.Request) -> https_fn.Response:
+     """GET the signed-in user's current task steps for one client (?clientId=); firm-scoped, only steps assigned to this user."""
+     # (Function meaning): Answer the browser's pre-flight permission question immediately with the CORS headers and an empty 204 body, doing no auth or database work for that probe.
+     # (External references): _cors_headers_for_local_web is defined earlier in this file.
+     if req.method == "OPTIONS":
+          return https_fn.Response("", status=204, headers=_cors_headers_for_local_web(req))
+
+     # (Function meaning): This endpoint only reads data, so it only accepts GET; any other verb gets a 405 "Method Not Allowed".
+     if req.method != "GET":
+          return _json_error(req, "Method not allowed", 405)
+
+     # (Function meaning): Read the login token from the Authorization header and verify it is a genuine Firebase token; if it is missing or fake, refuse with 401 so the browser knows it must sign in.
+     # (External references): _verify_bearer_token is defined earlier in this file.
+     decoded = _verify_bearer_token(req)
+     if not decoded:
+          return _json_error(req, "Missing or invalid Authorization header", 401)
+
+     # (Function meaning): Pull the user's unique id out of the verified token; without it we cannot tell which steps belong to this person, so refuse with 401.
+     uid = decoded.get("uid")
+     if not uid:
+          return _json_error(req, "Invalid token payload", 401)
+
+     # (Function meaning): Read which client's tasks the browser is asking for from the URL query string (?clientId=...) and trim spaces; if it is empty we cannot filter, so return a 400 "Bad Request".
+     client_id = str(req.args.get("clientId", "")).strip()
+     if not client_id:
+          return _json_error(req, "clientId is required", 400)
+
+     # (Function meaning): Look up this user's profile by uid and read only their firmId, because every task must be checked against the firm the user belongs to.
+     # (External references): _mongodb_users_collection stores profiles keyed by uid in [save_user_profile] above.
+     try:
+          users = _mongodb_users_collection()
+          user_doc = users.find_one({"_id": uid}, {"firmId": 1})
+     except Exception:
+          return _json_error(req, "Could not read user profile from database", 503)
+
+     # (Function meaning): If there is no profile, or the profile has no firmId, we cannot safely scope tasks to a firm, so return 404/403 accordingly.
+     if not user_doc:
+          return _json_error(req, "User profile not found", 404)
+     user_firm_id = str(user_doc.get("firmId", "")).strip()
+     if not user_firm_id:
+          return _json_error(req, "User profile has no firmId", 403)
+
+     # (Function meaning): Ask the Task collection for every task that belongs to this firm AND this client AND is not already finished overall — these are the only tasks that could still have work for the user.
+     # (External references): _mongodb_tasks_collection is defined near the top of this file; the field names FirmID, ClientID, OverallStatus match the stored task document shape.
+     try:
+          tasks_col = _mongodb_tasks_collection()
+          task_docs = list(
+               tasks_col.find(
+                    {
+                         "FirmID": user_firm_id,
+                         "ClientID": client_id,
+                         "OverallStatus": {"$ne": _TASK_OVERALL_COMPLETED},
+                    }
+               )
+          )
+     except Exception:
+          return _json_error(req, "Could not read tasks from database", 503)
+
+     now = datetime.now(timezone.utc)
+     rows = []
+     # (Function meaning): Go through each task one at a time and only keep the step that is currently in_progress AND belongs to this user; everything else is skipped.
+     for task in task_docs:
+          # (Function meaning): Find this user's in_progress step on the task; if there is none (the step is still not_started, is someone else's, or the task is between steps), skip this task entirely so only active work shows.
+          active_step = _in_progress_step_for_user(task.get("Steps"), uid)
+          if not active_step:
+               continue
+
+          # (Function meaning): Read when this in_progress step started so the days-in-step counter has an anchor; if it is somehow missing, fall back to "right now".
+          started_at = active_step.get("StartedAt")
+
+          # (Function meaning): If an already-in_progress step is missing its StartedAt (for example it was switched on directly in the database), stamp it now so the live counter is consistent — we only fill the missing time, we never change the status here.
+          if not started_at:
+               started_at = now
+               try:
+                    tasks_col.update_one(
+                         {
+                              "TaskID": task.get("TaskID"),
+                              "Steps.StepID": active_step.get("StepID"),
+                         },
+                         {
+                              "$set": {
+                                   "Steps.$.StartedAt": now,
+                                   "UpdatedAt": now,
+                              }
+                         },
+                    )
+               except Exception:
+                    # (Function meaning): If stamping the start time fails we still show the row using "now" — a missing stamp should not hide the user's work.
+                    pass
+
+          # (Function meaning): Build one clean row for the browser, converting any date objects to text so json.dumps can send them; this is the exact shape [taskfetch.js] expects.
+          rows.append(
+               {
+                    "taskId": task.get("TaskID"),
+                    "stepId": active_step.get("StepID"),
+                    "stepNumber": active_step.get("StepNumber"),
+                    "title": task.get("TaskName"),
+                    "stepTitle": active_step.get("StepTitle"),
+                    # (Function meaning): Read the task's urgency from "TaskPriority" (the real field name in the stored document); fall back to "Priority" just in case an older document used that spelling, so the badge shows a value either way.
+                    "priority": task.get("TaskPriority") or task.get("Priority"),
+                    "assignedDate": _to_iso(started_at),
+                    "dueDate": _to_iso(active_step.get("DueDate")),
+               }
+          )
+
+     # (Function meaning): Send the collected rows back wrapped in { "tasks": [...] } as JSON, with the CORS headers so the browser accepts the response.
+     return https_fn.Response(
+          json.dumps({"tasks": rows}, indent=2),
+          mimetype="application/json",
+          headers=_cors_headers_for_local_web(req),
+     )
+
+
+@https_fn.on_request()
+def complete_task_step(req: https_fn.Request) -> https_fn.Response:
+     """POST { taskId, stepId } to mark the user's current step complete, advance to the next step, and finish the task when all steps are done."""
+     cors = _cors_headers_for_local_web(req)
+     # (Function meaning): Reply to the browser's pre-flight permission probe right away with CORS headers and an empty 204 body.
+     if req.method == "OPTIONS":
+          return https_fn.Response("", status=204, headers=cors)
+
+     # (Function meaning): This endpoint changes data, so it only accepts POST; any other verb gets a 405 "Method Not Allowed".
+     if req.method != "POST":
+          return _json_error(req, "Method not allowed", 405)
+
+     # (Function meaning): Verify the Firebase login token and refuse with 401 if it is missing or invalid.
+     decoded = _verify_bearer_token(req)
+     if not decoded:
+          return _json_error(req, "Missing or invalid Authorization header", 401)
+
+     # (Function meaning): Read the user's unique id from the token; without it we cannot prove the step is theirs, so refuse with 401.
+     uid = decoded.get("uid")
+     if not uid:
+          return _json_error(req, "Invalid token payload", 401)
+
+     # (Function meaning): Read the JSON body the browser sent; if it is not an object, the request is malformed, so return 400.
+     body = req.get_json(silent=True)
+     if not isinstance(body, dict):
+          return _json_error(req, "Expected JSON body", 400)
+
+     # (Function meaning): Pull the two ids that say which task and which step to complete, trimming spaces; both are required, so return 400 if either is empty.
+     task_id = str(body.get("taskId", "")).strip()
+     step_id = str(body.get("stepId", "")).strip()
+     if not task_id or not step_id:
+          return _json_error(req, "taskId and stepId are required", 400)
+
+     # (Function meaning): Read this user's firmId from their profile so we can confirm the task belongs to their firm before changing anything.
+     try:
+          users = _mongodb_users_collection()
+          user_doc = users.find_one({"_id": uid}, {"firmId": 1})
+     except Exception:
+          return _json_error(req, "Could not read user profile from database", 503)
+
+     if not user_doc:
+          return _json_error(req, "User profile not found", 404)
+     user_firm_id = str(user_doc.get("firmId", "")).strip()
+     if not user_firm_id:
+          return _json_error(req, "User profile has no firmId", 403)
+
+     # (Function meaning): Load the one task that matches both the requested TaskID and this user's firm; scoping by firm stops anyone editing another firm's task.
+     try:
+          tasks_col = _mongodb_tasks_collection()
+          task = tasks_col.find_one({"TaskID": task_id, "FirmID": user_firm_id})
+     except Exception:
+          return _json_error(req, "Could not read task from database", 503)
+
+     if not task:
+          return _json_error(req, "Task not found", 404)
+
+     # (Function meaning): Work out which step is currently active for this task; if none is active the task is already finished, so there is nothing to complete (409 "Conflict").
+     steps = task.get("Steps")
+     active_step = _current_active_step(steps)
+     if not active_step:
+          return _json_error(req, "Task has no active step to complete", 409)
+
+     # (Function meaning): Guard against completing the wrong step: the step the browser named must be the one that is actually active right now, otherwise refuse with 409 so steps cannot be skipped or completed out of order.
+     if str(active_step.get("StepID", "")).strip() != step_id:
+          return _json_error(req, "This step is not the current active step", 409)
+
+     # (Function meaning): Only the person the step is assigned to may complete it; if the active step belongs to someone else, refuse with 403 "Forbidden".
+     if str(active_step.get("AssignedToUserID", "")).strip() != uid:
+          return _json_error(req, "Step is not assigned to you", 403)
+
+     now = datetime.now(timezone.utc)
+
+     # (Function meaning): Read the running tally of finished steps (default 0 if missing) and add one for the step we are completing now.
+     try:
+          steps_completed = int(task.get("StepsCompleted", 0) or 0)
+     except (TypeError, ValueError):
+          steps_completed = 0
+     new_steps_completed = steps_completed + 1
+
+     # (Function meaning): Read the total number of steps; if it is missing or unreadable, fall back to counting the Steps list so the "all done?" check still works.
+     try:
+          steps_total = int(task.get("StepsTotal", 0) or 0)
+     except (TypeError, ValueError):
+          steps_total = 0
+     if steps_total <= 0:
+          steps_total = len(steps) if isinstance(steps, list) else new_steps_completed
+
+     # (Function meaning): Stamp the finished step as completed, record the exact finish time, and record which user finished it; also bump the task's last-updated time.
+     set_fields = {
+          "Steps.$[cur].Status": _TASK_STEP_COMPLETED,
+          "Steps.$[cur].CompletedAt": now,
+          "Steps.$[cur].CompletedByUserID": uid,
+          "UpdatedAt": now,
+     }
+     # (Function meaning): Start the list of "which array element does each $[name] mean" rules with the rule that "cur" is the step we just completed (matched by its StepID).
+     array_filters = [{"cur.StepID": step_id}]
+
+     # (Function meaning): Look for the very next step by StepNumber (the smallest StepNumber larger than the one we just finished) so we can hand the baton to whoever is already assigned to it.
+     current_step_number = active_step.get("StepNumber", 0)
+     next_step = None
+     if isinstance(steps, list):
+          later_steps = [
+               step
+               for step in steps
+               if isinstance(step, dict)
+               and step.get("StepNumber", 0) > current_step_number
+          ]
+          if later_steps:
+               next_step = min(later_steps, key=lambda step: step.get("StepNumber", 0))
+
+     # (Function meaning): If there is a next step, flip it to in_progress and stamp its StartedAt to now so the next person's days-in-step counter starts here; the assignee already lives on the step, so we leave it alone.
+     if next_step is not None:
+          set_fields["Steps.$[nxt].Status"] = _TASK_STEP_IN_PROGRESS
+          set_fields["Steps.$[nxt].StartedAt"] = now
+          array_filters.append({"nxt.StepID": next_step.get("StepID")})
+
+     # (Function meaning): If finishing this step means every step is now done, mark the whole task completed so it drops out of everyone's active lists.
+     if new_steps_completed >= steps_total:
+          set_fields["OverallStatus"] = _TASK_OVERALL_COMPLETED
+
+     # (Function meaning): Apply all the changes in one database write: $set updates the named fields, $inc adds 1 to StepsCompleted, and array_filters tells MongoDB exactly which steps "cur" and "nxt" point to.
+     try:
+          tasks_col.update_one(
+               {"TaskID": task_id, "FirmID": user_firm_id},
+               {
+                    "$set": set_fields,
+                    "$inc": {"StepsCompleted": 1},
+               },
+               array_filters=array_filters,
+          )
+     except Exception:
+          return _json_error(req, "Could not update task in database", 503)
+
+     # (Function meaning): Tell the browser it worked and report the new counts and whether the task is now fully complete, so the UI can refresh and the user can see progress.
+     return https_fn.Response(
+          json.dumps(
+               {
+                    "ok": True,
+                    "stepsCompleted": new_steps_completed,
+                    "stepsTotal": steps_total,
+                    "overallCompleted": new_steps_completed >= steps_total,
+               }
+          ),
           status=200,
           mimetype="application/json",
           headers=cors,
