@@ -21,7 +21,10 @@
   "scripts": {
     "start": "react-scripts start",
     "build": "react-scripts build",
-    "deploy": "npm run build && npx -y firebase-tools@latest deploy --only hosting,auth",
+    "emulators": "npx -y firebase-tools@latest emulators:start --only functions,auth --project lynkfiprod",
+    "deploy": "npm run build && npx -y firebase-tools@latest deploy --only hosting,functions,auth --project lynkfiprod",
+    "deploy:hosting": "npm run build && npx -y firebase-tools@latest deploy --only hosting,auth --project lynkfiprod",
+    "deploy:functions": "npx -y firebase-tools@latest deploy --only functions --project lynkfiprod",
     "test": "react-scripts test",
     "eject": "react-scripts eject"
   },

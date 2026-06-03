@@ -47,6 +47,7 @@ def _firebase_hosting_origins() -> frozenset:
      return frozenset(
           {
                f"https://{project}.web.app",
+               f"https://{project}.firebaseapp.com",
           }
      )
 
@@ -64,6 +65,7 @@ def _cors_headers_for_local_web(req: https_fn.Request) -> dict:
           "Access-Control-Allow-Origin": allow,
           "Access-Control-Allow-Methods": "GET, POST, OPTIONS",
           "Access-Control-Allow-Headers": "Content-Type, Authorization",
+          "Vary": "Origin",
      }
 
 
