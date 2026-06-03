@@ -5,7 +5,7 @@ import {
   getAuth,
   connectAuthEmulator,
   setPersistence,
-  browserSessionPersistence,
+  browserLocalPersistence,
 } from "firebase/auth";
 import { getFunctions, connectFunctionsEmulator } from "firebase/functions";
 // TODO: Add SDKs for Firebase products that you want to use
@@ -37,8 +37,9 @@ const analytics = getAnalytics(app);
 // (Function meaning): `getAuth` creates the sign-in service tied to this Firebase app so other files can log users in or out.
 const auth = getAuth(app);
 // (Function meaning): `setPersistence` with `browserSessionPersistence` keeps you signed in on refresh but clears login when the tab or browser closes (not long-term local storage).
+// (Function meaning): `setPersistence` with `browserLocalPersistence` makes every tab in this browser share one Firebase login, so signing in as a different user updates the whole browser.
 // (External references): [AuthContext.js] waits for `authPersistenceReady` before `onAuthStateChanged`.
-export const authPersistenceReady = setPersistence(auth, browserSessionPersistence);
+export const authPersistenceReady = setPersistence(auth, browserLocalPersistence);
 // (Function meaning): `getFunctions` creates the Cloud Functions client so the app can call your Python backend in [functions/main.py].
 const functions = getFunctions(app);
 

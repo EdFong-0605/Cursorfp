@@ -22,6 +22,7 @@ export function AuthProvider({ children }) {
   // (Function meaning): `true` when [check_firm_admin] in [functions/main.py] says this user's MongoDB profile has `firmRole` firm_admin.
   const [isFirmAdmin, setIsFirmAdmin] = useState(false);
 
+  // (Function meaning): Wait for browser-wide persistence in [firebase.js], then listen for sign-in, sign-out, or a different tab changing the current browser user.
   // (Function meaning): Wait for session-only persistence in [firebase.js], then listen for sign-in, sign-out, or an existing tab session (survives refresh, not tab close).
   useEffect(() => {
     let unsubscribe = () => {};

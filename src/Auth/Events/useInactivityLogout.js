@@ -7,7 +7,8 @@ import { signOutUser } from './authService';
 import { logLoginEventNonBlocking } from '../API/loginLogApi';
 
 // (Function meaning): One hour in milliseconds — no activity longer than this triggers sign-out.
-const INACTIVITY_MS = 60 * 60 * 1000;
+// (Function meaning): 30 minutes in milliseconds — no activity longer than this triggers sign-out, even if the browser or computer was closed and reopened.
+const INACTIVITY_MS = 30 * 60 * 1000;
 
 // (Function meaning): How often we re-check idle time while signed in (every 60 seconds).
 const CHECK_INTERVAL_MS = 60 * 1000;
@@ -16,26 +17,30 @@ const CHECK_INTERVAL_MS = 60 * 1000;
 const ACTIVITY_THROTTLE_MS = 30 * 1000;
 
 // (Function meaning): sessionStorage key for the last time we saw user activity in this tab.
+// (Function meaning): localStorage key for the last time the user was active — stored browser-wide so the timer survives tab closes and browser restarts.
 const LAST_ACTIVITY_KEY = 'lynkfi_lastActivityAt';
 
 // (Function meaning): Browser events that count as the user still using the app.
 const ACTIVITY_EVENTS = ['mousedown', 'keydown', 'scroll', 'touchstart'];
 
 // (Function meaning): Read the stored timestamp from sessionStorage, or use now if missing or invalid.
+// (Function meaning): Read the stored timestamp from localStorage — if the app reopens after a shutdown, this still has the last known activity time so we can check if too much time passed.
 function readLastActivityAt() {
-  const raw = sessionStorage.getItem(LAST_ACTIVITY_KEY);
+  const raw = localStorage.getItem(LAST_ACTIVITY_KEY);
   const parsed = raw ? Number(raw) : NaN;
   return Number.isFinite(parsed) ? parsed : Date.now();
 }
 
 // (Function meaning): Save the current time as last activity so refresh within the tab keeps the idle clock.
+// (Function meaning): Write the current time into localStorage so the timestamp survives browser and computer restarts.
 function writeLastActivityAt(timestamp = Date.now()) {
-  sessionStorage.setItem(LAST_ACTIVITY_KEY, String(timestamp));
+  localStorage.setItem(LAST_ACTIVITY_KEY, String(timestamp));
 }
 
 // (Function meaning): Remove the idle timestamp when the user signs out or the hook unmounts.
+// (Function meaning): Remove the timestamp from localStorage so the next sign-in starts the idle clock fresh.
 function clearLastActivityAt() {
-  sessionStorage.removeItem(LAST_ACTIVITY_KEY);
+  localStorage.removeItem(LAST_ACTIVITY_KEY);
 }
 
 /**
@@ -48,6 +53,15 @@ export function useInactivityLogout(user) {
   useEffect(() => {
     if (!user) {
       clearLastActivityAt();
+      return undefined;
+    }
+
+    // (Function meaning): On startup — when the app opens or the browser restarts — immediately check if the saved activity time is already older than 30 minutes. If it is, sign out right away instead of waiting for the interval to fire.
+    const idleAtStartup = Date.now() - readLastActivityAt();
+    if (idleAtStartup >= INACTIVITY_MS) {
+      logLoginEventNonBlocking({ user, eventType: 'inactivity_logout', method: 'unknown' }).catch(() => {});
+      clearLastActivityAt();
+      signOutUser().catch((err) => console.error('[useInactivityLogout] startup sign out', err));
       return undefined;
     }
 
