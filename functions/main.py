@@ -98,6 +98,7 @@ def _mongodb_firms_collection():
 
 def _mongodb_clients_collection():
      # (Function meaning): Connect to MongoDB using the secret URI from env, pick the database name from env (or use "User" as the default), pick the collection name from env (or use "Clients" as the default), and return that collection object so callers can run queries against it.
+     # (Rename note): The caller named [on_request_example] in the comment below has been renamed to [request_Clients_info]; the comment below is preserved unchanged per project rules.
      # (External references): Uses the same MONGODB_URI and MONGODB_DATABASE env variables as [_mongodb_users_collection] and [_mongodb_firms_collection] above; callers include [on_request_example] below.
      mongo_uri = os.environ.get("MONGODB_URI")
      database_name = os.environ.get("MONGODB_DATABASE", "User")
@@ -200,7 +201,7 @@ def _json_error(
 
 
 @https_fn.on_request()
-def on_request_example(req: https_fn.Request) -> https_fn.Response:
+def request_Clients_info(req: https_fn.Request) -> https_fn.Response:
      """GET firm-scoped clients from MongoDB for the signed-in user; returns `{ clients: [...] }`."""
      # (Function meaning): If the browser sends a pre-flight OPTIONS request (asking "am I allowed to talk to you?"), reply immediately with the CORS permission headers and an empty 204 body — no auth or DB work needed.
      # (External references): _cors_headers_for_local_web is defined earlier in this file.
@@ -905,4 +906,66 @@ def complete_task_step(req: https_fn.Request) -> https_fn.Response:
           status=200,
           mimetype="application/json",
           headers=cors,
+     )
+
+
+# (Function meaning): This module-level list holds the firm's six built-in task type items — each entry has `id` (a unique machine key), `label` (the human-readable name shown on the sidebar card), `detail` (the one-line description shown under the name), and `category` (the workflow type id that groups this task, used by the frontend filter). This was moved here from the hardcoded `TASK_TYPES` array in [src/unAuth/Component/Layout/DynamicMain/2.4-TaskEdit/TaskEdit.js] so the frontend fetches it from the backend rather than baking it into the bundle.
+_FIRM_TASK_TYPES = [
+     {"id": "onboarding",      "label": "Client Onboarding",  "detail": "Account setup & KYC",         "category": "client"},
+     {"id": "annual-review",   "label": "Annual Review",       "detail": "Portfolio review & planning", "category": "reporting"},
+     {"id": "rebalance",       "label": "Portfolio Rebalance", "detail": "Allocation adjustments",      "category": "investment"},
+     {"id": "tax-planning",    "label": "Tax Planning",        "detail": "Year-end tax optimization",   "category": "investment"},
+     {"id": "estate-planning", "label": "Estate Planning",     "detail": "Wills & beneficiaries",       "category": "client"},
+     {"id": "compliance",      "label": "Compliance Check",    "detail": "Regulatory requirements",     "category": "compliance"},
+]
+
+
+@https_fn.on_request()
+def get_firm_task_types(req: https_fn.Request) -> https_fn.Response:
+     """GET the hardcoded list of firm task type items; returns `{ firmTaskTypes: [{id, label, detail, category}, ...] }`."""
+     # (Function meaning): If the browser sends a pre-flight OPTIONS request (asking "am I allowed to talk to you?"), reply immediately with the CORS permission headers and an empty 204 body — no DB work or auth needed.
+     if req.method == "OPTIONS":
+          return https_fn.Response("", status=204, headers=_cors_headers_for_local_web(req))
+
+     # (Function meaning): This endpoint only answers GET requests; anything else (POST, PUT, DELETE, etc.) gets a 405 "Method Not Allowed" error back to the caller.
+     if req.method != "GET":
+          return _json_error(req, "Method not allowed", 405)
+
+     # (Function meaning): Wrap the hardcoded `_FIRM_TASK_TYPES` list in a `{"firmTaskTypes": [...]}` object and send it back as JSON — this exact shape is what `fetchFirmTaskTypes` in [taskTypeFetch.js] expects when it reads `data.firmTaskTypes`.
+     # (External references): Frontend mapping in [src/unAuth/Component/API/taskTypeFetch.js] reads `data.firmTaskTypes` and maps id, label, detail, category from each item.
+     return https_fn.Response(
+          json.dumps({"firmTaskTypes": _FIRM_TASK_TYPES}, indent=2),
+          mimetype="application/json",
+          headers=_cors_headers_for_local_web(req),
+     )
+
+
+# (Function meaning): This module-level list holds the six workflow categories that every task type can belong to — stored once here so `get_task_type` below can return it without touching the database.
+_TASK_TYPES = [
+     {"id": "client",         "label": "Client"},
+     {"id": "investment",     "label": "Investment"},
+     {"id": "reporting",      "label": "Reporting"},
+     {"id": "compliance",     "label": "Compliance"},
+     {"id": "operations",     "label": "Operations"},
+     {"id": "internal-admin", "label": "Internal Admin"},
+]
+
+
+@https_fn.on_request()
+def get_task_type(req: https_fn.Request) -> https_fn.Response:
+     """GET the hardcoded list of workflow types; returns `{ taskTypes: [{id, label}, ...] }`."""
+     # (Function meaning): If the browser sends a pre-flight OPTIONS request (asking "am I allowed to talk to you?"), reply immediately with the CORS permission headers and an empty 204 body — no DB work or auth needed.
+     if req.method == "OPTIONS":
+          return https_fn.Response("", status=204, headers=_cors_headers_for_local_web(req))
+
+     # (Function meaning): This endpoint only answers GET requests; anything else (POST, PUT, DELETE, etc.) gets a 405 "Method Not Allowed" error back to the caller.
+     if req.method != "GET":
+          return _json_error(req, "Method not allowed", 405)
+
+     # (Function meaning): Wrap the hardcoded `_TASK_TYPES` list in a `{"taskTypes": [...]}` object and send it back as JSON — this exact shape is what [taskTypeFetch.js] expects when it reads `data.taskTypes`.
+     # (External references): Frontend mapping in [src/unAuth/Component/API/taskTypeFetch.js] reads `data.taskTypes` and maps id, label from each item.
+     return https_fn.Response(
+          json.dumps({"taskTypes": _TASK_TYPES}, indent=2),
+          mimetype="application/json",
+          headers=_cors_headers_for_local_web(req),
      )

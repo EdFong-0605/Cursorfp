@@ -1,0 +1,50 @@
+/* Input area — the typing box pinned to the bottom of the Task Edit white body. */
+
+/* (External references): Class names used in [Inputarea.js]. Sits inside `.task-edit-page__body` from [../TaskEdit.css]. */
+
+/* (Function meaning): `.input-area` is the row that holds the text box and the Send button; `display: flex` lines them up side by side, `gap` puts space between them, and the top border draws a thin line that separates this bar from the content above it. */
+.input-area {
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px 16px;
+  border-top: 1px solid #2b3a49;
+  background: #fff;
+}
+
+/* (Function meaning): `.input-area__field` is the text box; `flex: 1 1 auto` tells it to stretch and take up all the leftover width so the Send button stays small on the right. */
+.input-area__field {
+  flex: 1 1 auto;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 8px 12px;
+  font-size: 0.95rem;
+  border: 1px solid #7f93a8;
+  border-radius: 6px;
+  outline: none;
+}
+
+/* (Function meaning): When the user clicks into the box (`:focus`), darken the border so it is obvious which field is active. */
+.input-area__field:focus {
+  border-color: #2b3a49;
+}
+
+/* (Function meaning): `.input-area__send` styles the Send button — a dark rounded button; `cursor: pointer` shows the hand cursor so it feels clickable. */
+.input-area__send {
+  flex: 0 0 auto;
+  padding: 8px 16px;
+  font-size: 0.95rem;
+  color: #fff;
+  background: #2b3a49;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+}
+
+/* (Function meaning): When the button is `:disabled` (the box is empty), fade it and switch the cursor to the "not allowed" symbol so the user can see it cannot be clicked yet. */
+.input-area__send:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}

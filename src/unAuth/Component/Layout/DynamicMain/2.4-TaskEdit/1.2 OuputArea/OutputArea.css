@@ -1,0 +1,76 @@
+/* Output area — the scrollable result region at the top of the Task Edit white body. */
+
+/* (External references): Class names used in [outputarea.js]. Sits inside `.task-edit-page__body` from [../TaskEdit.css], above the input bar. */
+
+/* (Function meaning): `.output-area` is the upper region of the white body; `flex: 1 1 auto` makes it grow and eat all the leftover height above the input bar, and `overflow: auto` lets long output scroll inside this box instead of moving the whole page. */
+/* (Function meaning): The chat version keeps the same growing and scrolling box, but it aligns content to the top-left so messages read like a conversation instead of staying centered on the page. */
+.output-area {
+  flex: 1 1 auto;
+  min-height: 0;
+  box-sizing: border-box;
+  width: 100%;
+  padding: 16px;
+  overflow: auto;
+  background: #fff;
+  display: flex;
+  align-items: stretch;
+  justify-content: flex-start;
+}
+
+/* (Function meaning): `.output-area__placeholder` is the faint grey hint shown while there is no real output; the muted colour signals it is only a temporary message, not actual content. */
+.output-area__placeholder {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #8b9cb3;
+  text-align: center;
+  align-self: center;
+  width: 100%;
+}
+
+/* (Function meaning): `.output-area__messages` is the full chat column; `gap` creates space between message bubbles, and `width: 100%` lets right-aligned user messages move to the right edge. */
+.output-area__messages {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+/* (Function meaning): `.output-area__message` is one chat bubble wrapper; `max-width` keeps long lines readable instead of letting text stretch across the entire white area. */
+.output-area__message {
+  box-sizing: border-box;
+  max-width: 72%;
+  padding: 10px 12px;
+  border: 1px solid #d5dde7;
+  border-radius: 12px;
+  background: #f5f8fb;
+}
+
+/* (Function meaning): User messages are pushed to the right side with `align-self: flex-end`, making them feel like outgoing chat messages. */
+.output-area__message--user {
+  align-self: flex-end;
+  color: #fff;
+  background: #2b3a49;
+  border-color: #2b3a49;
+}
+
+/* (Function meaning): Output messages stay on the left side with `align-self: flex-start`, making them feel like replies from the page. */
+.output-area__message--output {
+  align-self: flex-start;
+}
+
+/* (Function meaning): `.output-area__speaker` is the small label above each message text; it helps the user understand who said the message. */
+.output-area__speaker {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  opacity: 0.75;
+}
+
+/* (Function meaning): `.output-area__text` is the actual chat text; `white-space: pre-wrap` keeps line breaks the user typed while still allowing long text to wrap inside the bubble. */
+.output-area__text {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  white-space: pre-wrap;
+}

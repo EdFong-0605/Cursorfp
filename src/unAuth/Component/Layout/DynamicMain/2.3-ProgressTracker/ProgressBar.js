@@ -3,7 +3,7 @@
  * - Parent: [MainLanding.js] passes `clients`, `selectedClientId`, `onSelectClient`.
  * - Client strip: [../3.1-ClientBar/Clientbar.js]. Styles: [ProgressBar.css].
  */
-import Clientbar from '../3.1-ClientBar/Clientbar';
+import Clientbar from '../3.1-DynamicSideBar/DynamicSideBar';
 import ClientNameTop from '../3.3-Clientnametop/clientnametop';
 import TaskFormat from '../3.4-TaskFormat/taskformat';
 import './ProgressBar.css';
@@ -22,12 +22,14 @@ function ProgressBar({ clients = [], selectedClientId, onSelectClient, onRefresh
 
   return (
     <section className="progress-bar-panel" aria-label="Task Progress">
+      {/* (Function meaning): `showSearch` turns on the client-name search box inside the sidebar so the user can type to filter the list down to a specific client without scrolling. */}
       <Clientbar
         clients={clients}
         selectedClientId={selectedClientId}
         onSelectClient={onSelectClient}
         onRefresh={onRefreshClients}
         pageKey="progress"
+        showSearch
       />
       <div className="progress-bar-panel__body">
         <ClientNameTop clientLabel={selected?.label ?? null} />

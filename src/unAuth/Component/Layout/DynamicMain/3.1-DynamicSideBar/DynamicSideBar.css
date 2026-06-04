@@ -302,3 +302,169 @@
   color: #8b9cb3;
   font-variant-numeric: tabular-nums;
 }
+
+/* Client-name search box — only shown on Clienttask and ProgressBar; sits between the title row and the card list. */
+
+/* (Function meaning): The search row is a flex container that lines up the icon, text input, and clear button side-by-side inside a rounded dark box matching the card style. */
+.cb-search {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-shrink: 0;
+  margin: 0 8px 10px 6px;
+  padding: 0 8px;
+  background-color: #1c2128;
+  border: 1px solid rgba(43, 58, 73, 0.95);
+  border-radius: 8px;
+  transition: border-color 0.18s ease;
+}
+
+.cb-search:focus-within {
+  border-color: rgba(88, 166, 255, 0.4);
+}
+
+/* (Function meaning): The icon is a muted grey so it does not compete with the text the user types. */
+.cb-search__icon {
+  flex-shrink: 0;
+  color: #8b9cb3;
+  display: block;
+}
+
+/* (Function meaning): The text input fills all leftover space, inherits the page font, and has no border or background of its own — the parent `.cb-search` wrapper provides those. */
+.cb-search__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  padding: 7px 0;
+  font: inherit;
+  font-size: 0.75rem;
+  color: #e6edf3;
+  caret-color: #58a6ff;
+}
+
+.cb-search__input::placeholder {
+  color: #8b9cb3;
+}
+
+/* (Function meaning): The × clear button appears only while the box has text; it is kept tiny and borderless so it looks like a lightweight icon rather than a full button. */
+.cb-search__clear {
+  flex-shrink: 0;
+  padding: 0 2px;
+  background: transparent;
+  border: 0;
+  font-size: 1rem;
+  line-height: 1;
+  color: #8b9cb3;
+  cursor: pointer;
+  transition: color 0.15s ease;
+}
+
+.cb-search__clear:hover {
+  color: #d6e2ef;
+}
+
+/* Workflow-type filter combobox — only shown on Task Edit; sits between the title row and the card list. */
+
+/* (Function meaning): The outer wrapper uses `position: relative` so the dropdown list (`position: absolute`) can be placed directly below the input without pushing the rest of the layout around. */
+.wf-filter {
+  position: relative;
+  flex-shrink: 0;
+  margin: 0 8px 10px 6px;
+}
+
+/* (Function meaning): The visible "field" row — a dark rounded box that looks like a select input; `cursor: pointer` tells the user they can click it to open the list. */
+.wf-filter__field {
+  display: flex;
+  align-items: center;
+  background-color: #1c2128;
+  border: 1px solid rgba(43, 58, 73, 0.95);
+  border-radius: 8px;
+  padding: 0 8px;
+  cursor: pointer;
+  transition: border-color 0.18s ease;
+}
+
+.wf-filter__field:hover {
+  border-color: rgba(88, 166, 255, 0.4);
+}
+
+/* (Function meaning): The `<input>` inside the field inherits the font from the rest of the page, has no visible border or background of its own (the parent `.wf-filter__field` provides those), and shows a blue text cursor when the user is typing. */
+.wf-filter__input {
+  flex: 1 1 auto;
+  min-width: 0;
+  background: transparent;
+  border: 0;
+  outline: 0;
+  padding: 7px 0;
+  font: inherit;
+  font-size: 0.75rem;
+  color: #e6edf3;
+  cursor: pointer;
+  caret-color: #58a6ff;
+}
+
+.wf-filter__input::placeholder {
+  color: #8b9cb3;
+}
+
+/* (Function meaning): The small down-arrow symbol is decorative — it signals "click to expand"; `pointer-events: none` lets clicks pass through it to the parent field handler so the arrow never accidentally swallows a click. */
+.wf-filter__chevron {
+  flex-shrink: 0;
+  font-size: 0.625rem;
+  color: #8b9cb3;
+  pointer-events: none;
+  padding-left: 4px;
+  line-height: 1;
+}
+
+/* (Function meaning): The options panel floats directly below the field using `position: absolute`; `z-index: 20` puts it in front of other sidebar content; `box-shadow` gives it depth so it reads as a separate layer. */
+.wf-filter__list {
+  position: absolute;
+  top: calc(100% + 4px);
+  left: 0;
+  right: 0;
+  z-index: 20;
+  background-color: #1c2128;
+  border: 1px solid rgba(88, 166, 255, 0.25);
+  border-radius: 8px;
+  list-style: none;
+  margin: 0;
+  padding: 4px 0;
+  max-height: 220px;
+  overflow-y: auto;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(139, 156, 179, 0.45) transparent;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.45);
+}
+
+/* (Function meaning): Each option row has comfortable tap-target padding and a smooth background transition so hovering feels responsive. */
+.wf-filter__option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 7px 12px;
+  font-size: 0.78125rem;
+  color: #c9d3e0;
+  cursor: pointer;
+  transition: background-color 0.12s ease;
+  user-select: none;
+}
+
+.wf-filter__option:hover {
+  background-color: rgba(88, 166, 255, 0.08);
+  color: #e6edf3;
+}
+
+/* (Function meaning): The currently selected option uses the brand blue accent colour so it stands out clearly from the un-selected rows. */
+.wf-filter__option--selected {
+  color: #58a6ff;
+}
+
+/* (Function meaning): The check mark that appears next to the active option; kept small so it does not compete visually with the option label text. */
+.wf-filter__check {
+  font-size: 0.6875rem;
+  color: #58a6ff;
+  flex-shrink: 0;
+}

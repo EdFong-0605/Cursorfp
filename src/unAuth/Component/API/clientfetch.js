@@ -12,7 +12,8 @@
  */
 
 /** Must match the Python `@https_fn.on_request()` function name (deployed / emulated). */
-export const DUMMY_CLIENTS_FUNCTION_NAME = 'on_request_example';
+// (Rename note): Python function was renamed from `on_request_example` to `request_Clients_info`; this string must stay in sync with the function name in [functions/main.py].
+export const DUMMY_CLIENTS_FUNCTION_NAME = 'request_Clients_info';
 
 /** Default region if `REACT_APP_FIREBASE_FUNCTIONS_REGION` is not set in `.env`. */
 export const DEFAULT_FUNCTIONS_REGION = 'us-central1';

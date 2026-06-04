@@ -16,6 +16,7 @@ import TaskEdit from '../Component/Layout/DynamicMain/2.4-TaskEdit/TaskEdit';
 import Admin from '../Component/Layout/DynamicMain/2.5 Admin Task/Admin';
 import Footer from '../Component/Layout/Footer/1.1 Footer/Footer';
 import { fetchDummyClientsFromMainPy } from '../Component/API/clientfetch';
+import { fetchFirmTaskTypes, fetchTaskTypes } from '../Component/API/taskTypeFetch';
 import { useAuth } from '../../Auth/Events/AuthContext';
 
 // (Function meaning): Turn the signed-in Firebase user into one or two letters for the round profile button in [NavBar.js].
@@ -39,6 +40,10 @@ function LandingPage() {
   const [loggingOut, setLoggingOut] = useState(false);
   // Start as [] so children always receive an array: empty means "still loading or none yet".
   const [clients, setClients] = useState([]);
+  // (Function meaning): `firmTaskTypes` holds the `{ id, label, detail, category }` card items for the Task Edit sidebar; fetched once on app load so they are ready before the user ever opens the clipboard pane.
+  const [firmTaskTypes, setFirmTaskTypes] = useState([]);
+  // (Function meaning): `workflowTypes` holds the `{ id, label }` dropdown options for the Task Edit workflow filter; fetched once alongside `firmTaskTypes`.
+  const [workflowTypes, setWorkflowTypes] = useState([]);
   // (Function meaning): `false` shows progress in [MainLanding.js]; `true` shows [Clienttask.js]. The person icon only turns this on — it does nothing if you are already on client tasks (see `onUserIconClick`).
   const [clientTaskOpen, setClientTaskOpen] = useState(false);
   // (Function meaning): When `true`, the middle column shows [Brain.js] instead of [MainLanding.js]. Starts `true` so the first screen is the brain page; the brain icon in [NavBar.js] only selects this view again (it does not turn it off).
@@ -63,6 +68,15 @@ function LandingPage() {
   useEffect(() => {
     pullClientsFromBackend();
   }, [pullClientsFromBackend]);
+
+  // (Function meaning): Fetch the firm's task type items and workflow-filter options once when the app first loads — both are static reference data so a single fetch at startup is enough; by the time the user clicks the clipboard icon to open Task Edit, the data is already sitting in memory and the sidebar appears instantly.
+  // (External references): `fetchFirmTaskTypes` calls `get_firm_task_types` and `fetchTaskTypes` calls `get_task_type`, both in [functions/main.py].
+  useEffect(() => {
+    Promise.all([fetchFirmTaskTypes(), fetchTaskTypes()]).then(([types, wfTypes]) => {
+      setFirmTaskTypes(types);
+      setWorkflowTypes(wfTypes);
+    });
+  }, []);
 
   // (Function meaning): When the user opens the client-task pane (`clientTaskOpen` becomes `true`), ask the backend again so the strip shows the full current list, not a stale empty array from before the emulator answered.
   useEffect(() => {
@@ -144,7 +158,7 @@ function LandingPage() {
         {brainViewOpen ? (
           <Brain />
         ) : taskEditViewOpen ? (
-          <TaskEdit />
+          <TaskEdit taskTypes={firmTaskTypes} workflowTypes={workflowTypes} />
         ) : isFirmAdmin && adminViewOpen ? (
           <Admin />
         ) : (

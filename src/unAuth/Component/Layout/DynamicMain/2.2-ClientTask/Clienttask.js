@@ -5,7 +5,7 @@
  * - Styles: [clienttask.css].
  */
 import { useCallback, useEffect, useRef, useState } from 'react';
-import Clientbar from '../3.1-ClientBar/Clientbar';
+import Clientbar from '../3.1-DynamicSideBar/DynamicSideBar';
 import ClientNameTop from '../3.3-Clientnametop/clientnametop';
 import TaskFormat from '../3.4-TaskFormat/taskformat';
 import { useAuth } from '../../../../../Auth/Events/AuthContext';
@@ -110,12 +110,14 @@ function Clienttask({ clients = [], selectedClientId, onSelectClient, onRefreshC
 
   return (
     <section className="client-task-panel" aria-label="Client Tasks">
+      {/* (Function meaning): `showSearch` turns on the client-name search box inside the sidebar so the user can type to filter the list down to a specific client without scrolling. */}
       <Clientbar
         clients={clients}
         selectedClientId={selectedClientId}
         onSelectClient={onSelectClient}
         onRefresh={onRefreshClients}
         pageKey="tasks"
+        showSearch
       />
       <div className="client-task-panel__body">
         <ClientNameTop clientLabel={selected?.label ?? null} />
