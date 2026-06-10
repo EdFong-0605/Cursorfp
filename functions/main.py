@@ -107,6 +107,15 @@ def _mongodb_clients_collection():
      return client[database_name][collection_name]
 
 
+def _mongodb_task_templates_collection():
+     # (Function meaning): Open a MongoDB connection with the secret URI from env, choose the database name from env (or "User" by default), and return the fixed "TaskTemplate" collection — the collection that holds reusable task blueprints (each with a Steps array) that the frontend fetches when a task type is selected.
+     # (External references): Shares MONGODB_URI and MONGODB_DATABASE with all other collection helpers; called by [get_task_template] below; the document shape (TaskName, Steps[...]) matches what is stored in [User.TaskTemplate] in MongoDB.
+     mongo_uri = os.environ.get("MONGODB_URI")
+     database_name = os.environ.get("MONGODB_DATABASE", "User")
+     client = MongoClient(mongo_uri)
+     return client[database_name]["TaskTemplate"]
+
+
 def _mongodb_tasks_collection():
      # (Function meaning): Open a MongoDB connection with the secret URI from env, choose the database name from env (or "User" by default to match every other helper above), choose the task collection name from env (or "Task" by default), and hand back that collection so callers can read and update task documents.
      # (External references): Shares the same MONGODB_URI and MONGODB_DATABASE env variables as [_mongodb_clients_collection] above; callers include [get_my_client_tasks] and [complete_task_step] below; the document shape (TaskID, FirmID, ClientID, Steps[...]) matches what is stored from the task-creation flow.
@@ -909,21 +918,29 @@ def complete_task_step(req: https_fn.Request) -> https_fn.Response:
      )
 
 
-# (Function meaning): This module-level list holds the firm's six built-in task type items — each entry has `id` (a unique machine key), `label` (the human-readable name shown on the sidebar card), `detail` (the one-line description shown under the name), and `category` (the workflow type id that groups this task, used by the frontend filter). This was moved here from the hardcoded `TASK_TYPES` array in [src/unAuth/Component/Layout/DynamicMain/2.4-TaskEdit/TaskEdit.js] so the frontend fetches it from the backend rather than baking it into the bundle.
-_FIRM_TASK_TYPES = [
-     {"id": "onboarding",      "label": "Client Onboarding",  "detail": "Account setup & KYC",         "category": "client"},
-     {"id": "annual-review",   "label": "Annual Review",       "detail": "Portfolio review & planning", "category": "reporting"},
-     {"id": "rebalance",       "label": "Portfolio Rebalance", "detail": "Allocation adjustments",      "category": "investment"},
-     {"id": "tax-planning",    "label": "Tax Planning",        "detail": "Year-end tax optimization",   "category": "investment"},
-     {"id": "estate-planning", "label": "Estate Planning",     "detail": "Wills & beneficiaries",       "category": "client"},
-     {"id": "compliance",      "label": "Compliance Check",    "detail": "Regulatory requirements",     "category": "compliance"},
-]
+def _format_template_steps(raw_steps) -> list:
+     # (Function meaning): Take the raw `Steps` array from a TaskTemplate MongoDB document and return a cleaned list where each step only keeps the six fields the frontend needs, with safe string/int types — shared by [get_task_template] and [get_firm_task_types] so both endpoints return steps in the same shape.
+     if not isinstance(raw_steps, list):
+          return []
+     return [
+          {
+               "StepID":          str(step.get("StepID") or ""),
+               "StepNumber":      int(step.get("StepNumber") or 0),
+               "StepTitle":       str(step.get("StepTitle") or ""),
+               "Reason":          str(step.get("Reason") or ""),
+               "NeededInformation": [str(item) for item in (step.get("NeededInformation") or [])],
+               "TeamResponsible": str(step.get("TeamResponsible") or ""),
+               "Notes":           str(step.get("Notes") or ""),
+          }
+          for step in raw_steps
+          if isinstance(step, dict)
+     ]
 
 
 @https_fn.on_request()
-def get_firm_task_types(req: https_fn.Request) -> https_fn.Response:
-     """GET the hardcoded list of firm task type items; returns `{ firmTaskTypes: [{id, label, detail, category}, ...] }`."""
-     # (Function meaning): If the browser sends a pre-flight OPTIONS request (asking "am I allowed to talk to you?"), reply immediately with the CORS permission headers and an empty 204 body — no DB work or auth needed.
+def get_task_template(req: https_fn.Request) -> https_fn.Response:
+     """GET the steps for a task template by name; returns `{ steps: [{StepID, StepNumber, StepTitle, Reason, NeededInformation, TeamResponsible, Notes}, ...] }`. Returns `{ steps: [] }` when no matching template exists."""
+     # (Function meaning): If the browser sends a pre-flight OPTIONS request (asking "am I allowed to talk to you?"), reply immediately with the CORS permission headers and an empty 204 body — no DB work needed.
      if req.method == "OPTIONS":
           return https_fn.Response("", status=204, headers=_cors_headers_for_local_web(req))
 
@@ -931,30 +948,46 @@ def get_firm_task_types(req: https_fn.Request) -> https_fn.Response:
      if req.method != "GET":
           return _json_error(req, "Method not allowed", 405)
 
-     # (Function meaning): Wrap the hardcoded `_FIRM_TASK_TYPES` list in a `{"firmTaskTypes": [...]}` object and send it back as JSON — this exact shape is what `fetchFirmTaskTypes` in [taskTypeFetch.js] expects when it reads `data.firmTaskTypes`.
-     # (External references): Frontend mapping in [src/unAuth/Component/API/taskTypeFetch.js] reads `data.firmTaskTypes` and maps id, label, detail, category from each item.
+     # (Function meaning): Read the `taskName` query parameter from the URL (e.g. `?taskName=Client+Onboarding`); if it is missing or blank, return an empty steps list right away — there is nothing to look up.
+     task_name = (req.args.get("taskName") or "").strip()
+     if not task_name:
+          return https_fn.Response(
+               json.dumps({"steps": []}),
+               mimetype="application/json",
+               headers=_cors_headers_for_local_web(req),
+          )
+
+     # (Function meaning): Open the TaskTemplate collection and search for the one document whose `TaskName` field exactly matches what the frontend sent; `find_one` returns the document if found, or `None` if there is no match.
+     try:
+          col = _mongodb_task_templates_collection()
+          doc = col.find_one({"TaskName": task_name}, {"_id": 0, "Steps": 1})
+     except Exception:
+          return _json_error(req, "Could not read task template from database", 503)
+
+     # (Function meaning): If no matching template was found, return an empty steps list — not an error, because many task types simply do not have a template yet.
+     if not doc:
+          return https_fn.Response(
+               json.dumps({"steps": []}),
+               mimetype="application/json",
+               headers=_cors_headers_for_local_web(req),
+          )
+
+     # (Function meaning): Pull the `Steps` array out of the document and run it through the shared formatter so the response matches what [get_firm_task_types] embeds on each sidebar item.
+     steps = _format_template_steps(doc.get("Steps"))
+
+     # (Function meaning): Wrap the cleaned steps list in a `{"steps": [...]}` object and send it back as JSON — this exact shape is what `fetchTaskTemplate` in [taskTypeFetch.js] expects when it reads `data.steps`.
+     # (External references): Frontend mapping in [src/unAuth/Component/API/taskTypeFetch.js] reads `data.steps` and passes the array to [TaskEdit.js] → [OutputArea.js].
      return https_fn.Response(
-          json.dumps({"firmTaskTypes": _FIRM_TASK_TYPES}, indent=2),
+          json.dumps({"steps": steps}, indent=2),
           mimetype="application/json",
           headers=_cors_headers_for_local_web(req),
      )
 
 
-# (Function meaning): This module-level list holds the six workflow categories that every task type can belong to — stored once here so `get_task_type` below can return it without touching the database.
-_TASK_TYPES = [
-     {"id": "client",         "label": "Client"},
-     {"id": "investment",     "label": "Investment"},
-     {"id": "reporting",      "label": "Reporting"},
-     {"id": "compliance",     "label": "Compliance"},
-     {"id": "operations",     "label": "Operations"},
-     {"id": "internal-admin", "label": "Internal Admin"},
-]
-
-
 @https_fn.on_request()
-def get_task_type(req: https_fn.Request) -> https_fn.Response:
-     """GET the hardcoded list of workflow types; returns `{ taskTypes: [{id, label}, ...] }`."""
-     # (Function meaning): If the browser sends a pre-flight OPTIONS request (asking "am I allowed to talk to you?"), reply immediately with the CORS permission headers and an empty 204 body — no DB work or auth needed.
+def get_firm_task_types(req: https_fn.Request) -> https_fn.Response:
+     """GET all task templates from MongoDB; returns `{ firmTaskTypes: [{id, label, detail, category, steps}, ...] }` where each entry is one document from User.TaskTemplate."""
+     # (Function meaning): If the browser sends a pre-flight OPTIONS request (asking "am I allowed to talk to you?"), reply immediately with the CORS permission headers and an empty 204 body — no DB work needed.
      if req.method == "OPTIONS":
           return https_fn.Response("", status=204, headers=_cors_headers_for_local_web(req))
 
@@ -962,10 +995,49 @@ def get_task_type(req: https_fn.Request) -> https_fn.Response:
      if req.method != "GET":
           return _json_error(req, "Method not allowed", 405)
 
-     # (Function meaning): Wrap the hardcoded `_TASK_TYPES` list in a `{"taskTypes": [...]}` object and send it back as JSON — this exact shape is what [taskTypeFetch.js] expects when it reads `data.taskTypes`.
-     # (External references): Frontend mapping in [src/unAuth/Component/API/taskTypeFetch.js] reads `data.taskTypes` and maps id, label from each item.
+     # (Function meaning): Open the TaskTemplate collection and fetch every document, pulling only the three fields we need so MongoDB sends less data over the wire; the internal `_id` field is excluded to keep the JSON clean.
+     # (External references): `_mongodb_task_templates_collection` is defined earlier in this file and connects to the User.TaskTemplate collection.
+     try:
+          col = _mongodb_task_templates_collection()
+          docs = list(col.find({}, {"_id": 0, "TaskName": 1, "TaskCategory": 1, "Steps": 1}))
+     except Exception:
+          return _json_error(req, "Could not read task templates from database", 503)
+
+     # (Function meaning): Turn each MongoDB document into a sidebar card object — `id` and `label` come from `TaskName`, `category` from `TaskCategory` (slugified to lowercase-hyphen so it matches filter ids), `detail` shows the step count, and `steps` carries the full formatted step list so [LandingPage.js] can pass everything to [TaskEdit.js] in one startup fetch.
+     # (External references): Frontend mapping in [src/unAuth/Component/API/taskTypeFetch.js] reads `data.firmTaskTypes` and maps each item to `{ id, label, detail, category, steps }`.
+     firm_task_types = []
+     for doc in docs:
+          task_name = str(doc.get("TaskName") or "").strip()
+          if not task_name:
+               continue
+          formatted_steps = _format_template_steps(doc.get("Steps"))
+          step_count = len(formatted_steps)
+          firm_task_types.append({
+               "id":       task_name,
+               "label":    task_name,
+               "detail":   f"{step_count} step{'s' if step_count != 1 else ''}",
+               "category": str(doc.get("TaskCategory") or "").strip().lower().replace(" ", "-"),
+               "steps":    formatted_steps,
+          })
+
+     # (Function meaning): Derive the unique category list from the same docs already in memory — walk through the raw documents so we keep the original display label (before slugification); use an ordered dict keyed on the slug so each category appears only once; sort alphabetically by label so the dropdown is always in a predictable order.
+     seen_slugs = {}
+     for doc in docs:
+          original = str(doc.get("TaskCategory") or "").strip()
+          if not original:
+               continue
+          slug = original.lower().replace(" ", "-")
+          if slug not in seen_slugs:
+               seen_slugs[slug] = original
+     task_categories = sorted(
+          [{"id": slug, "label": label} for slug, label in seen_slugs.items()],
+          key=lambda x: x["label"].lower(),
+     )
+
+     # (Function meaning): Return both `firmTaskTypes` (sidebar cards) and `taskCategories` (filter dropdown options) in a single JSON response — `fetchFirmTaskTypes` in [taskTypeFetch.js] reads both keys and passes them separately to [LandingPage.js] so only one network call is needed at startup instead of two.
+     # (External references): Frontend mapping in [src/unAuth/Component/API/taskTypeFetch.js] reads `data.firmTaskTypes` and `data.taskCategories`.
      return https_fn.Response(
-          json.dumps({"taskTypes": _TASK_TYPES}, indent=2),
+          json.dumps({"firmTaskTypes": firm_task_types, "taskCategories": task_categories}, indent=2),
           mimetype="application/json",
           headers=_cors_headers_for_local_web(req),
      )

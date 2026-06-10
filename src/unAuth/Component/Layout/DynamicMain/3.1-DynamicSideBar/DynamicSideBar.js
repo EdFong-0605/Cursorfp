@@ -67,18 +67,17 @@ function WorkflowFilterDropdown({ options, value, onChange, placeholder }) {
   return (
     // (Function meaning): The outer `<div>` uses `position: relative` in the CSS so the dropdown list (`position: absolute`) appears directly below the input field without shifting the rest of the page layout.
     <div className="wf-filter" ref={containerRef}>
-      {/* (Function meaning): The visible "button-like" field — clicking anywhere on it opens or closes the dropdown list. */}
+      {/* (Function meaning): The visible "button-like" field — clicking anywhere on it opens or closes the dropdown list; when opening, the search text is also cleared so the user always starts with all options visible. */}
       <div
         className="wf-filter__field"
-        onClick={() => setOpen((v) => !v)}
+        onClick={() => setOpen((v) => { if (!v) setSearchText(''); return !v; })}
       >
-        {/* (Function meaning): The text input serves double duty — when the list is closed it shows the selected label (read-only); when the list is open the user can type to search, so `readOnly` is toggled and the value switches between the display label and the live search text. */}
+        {/* (Function meaning): The text input serves double duty — when the list is closed it shows the selected label (read-only); when the list is open the user can type to search, so `readOnly` is toggled and the value switches between the display label and the live search text. Opening and closing is handled entirely by the parent `<div>` onClick so there is no competing onFocus handler that would toggle the list shut on the first click. */}
         <input
           className="wf-filter__input"
           placeholder={placeholder}
           value={open ? searchText : displayLabel}
           onChange={(e) => setSearchText(e.target.value)}
-          onFocus={() => { setOpen(true); setSearchText(''); }}
           readOnly={!open}
           aria-haspopup="listbox"
           aria-expanded={open}

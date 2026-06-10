@@ -16,7 +16,7 @@ import TaskEdit from '../Component/Layout/DynamicMain/2.4-TaskEdit/TaskEdit';
 import Admin from '../Component/Layout/DynamicMain/2.5 Admin Task/Admin';
 import Footer from '../Component/Layout/Footer/1.1 Footer/Footer';
 import { fetchDummyClientsFromMainPy } from '../Component/API/clientfetch';
-import { fetchFirmTaskTypes, fetchTaskTypes } from '../Component/API/taskTypeFetch';
+import { fetchFirmTaskTypes } from '../Component/API/taskTypeFetch';
 import { useAuth } from '../../Auth/Events/AuthContext';
 
 // (Function meaning): Turn the signed-in Firebase user into one or two letters for the round profile button in [NavBar.js].
@@ -69,14 +69,22 @@ function LandingPage() {
     pullClientsFromBackend();
   }, [pullClientsFromBackend]);
 
-  // (Function meaning): Fetch the firm's task type items and workflow-filter options once when the app first loads — both are static reference data so a single fetch at startup is enough; by the time the user clicks the clipboard icon to open Task Edit, the data is already sitting in memory and the sidebar appears instantly.
-  // (External references): `fetchFirmTaskTypes` calls `get_firm_task_types` and `fetchTaskTypes` calls `get_task_type`, both in [functions/main.py].
-  useEffect(() => {
-    Promise.all([fetchFirmTaskTypes(), fetchTaskTypes()]).then(([types, wfTypes]) => {
+  // (Function meaning): `pullTaskTypesFromBackend` is the re-usable fetch callback for task types and filter categories — wrapping it in `useCallback` lets the refresh button in [DynamicSideBar.js] call it on demand, exactly the same way `pullClientsFromBackend` works for the client list.
+  // (External references): `fetchFirmTaskTypes` is defined in [src/unAuth/Component/API/taskTypeFetch.js] and returns `{ types, categories }` from `get_firm_task_types` in [functions/main.py].
+  const pullTaskTypesFromBackend = useCallback(async () => {
+    try {
+      const { types, categories } = await fetchFirmTaskTypes();
       setFirmTaskTypes(types);
-      setWorkflowTypes(wfTypes);
-    });
+      setWorkflowTypes(categories);
+    } catch (e) {
+      console.error('[LandingPage] fetch task types', e);
+    }
   }, []);
+
+  // (Function meaning): Run `pullTaskTypesFromBackend` once when the app first loads so task-type data is ready before the user opens Task Edit.
+  useEffect(() => {
+    pullTaskTypesFromBackend();
+  }, [pullTaskTypesFromBackend]);
 
   // (Function meaning): When the user opens the client-task pane (`clientTaskOpen` becomes `true`), ask the backend again so the strip shows the full current list, not a stale empty array from before the emulator answered.
   useEffect(() => {
@@ -158,7 +166,7 @@ function LandingPage() {
         {brainViewOpen ? (
           <Brain />
         ) : taskEditViewOpen ? (
-          <TaskEdit taskTypes={firmTaskTypes} workflowTypes={workflowTypes} />
+          <TaskEdit taskTypes={firmTaskTypes} workflowTypes={workflowTypes} onRefreshTaskTypes={pullTaskTypesFromBackend} />
         ) : isFirmAdmin && adminViewOpen ? (
           <Admin />
         ) : (

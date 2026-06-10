@@ -25,7 +25,7 @@
   min-height: 0;
   display: flex;
   flex-direction: column;
-  background: #fff;
+  background-color: #161b22;
   overflow: hidden;
 }
 
@@ -38,6 +38,12 @@
   align-items: stretch;
   justify-content: flex-start;
   overflow: auto;
+}
+
+/* (Function meaning): `.task-edit-page__content--split` is the modifier added when both `OutputArea` and `ChatArea` are present; it switches the content region to a vertical column (`flex-direction: column`) so the step cards sit on top and the chat dialogue sits below; `overflow: hidden` stops the outer box from scrolling so each child scrolls on its own and the Chat tab can float on the top edge without being clipped. */
+.task-edit-page__content--split {
+  flex-direction: column;
+  overflow: hidden;
 }
 
 /* (Function meaning): Wrapper that stacks the task-type name above its description in the centre of the right-side body. */

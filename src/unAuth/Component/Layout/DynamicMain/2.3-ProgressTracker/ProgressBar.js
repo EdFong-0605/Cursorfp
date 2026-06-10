@@ -4,7 +4,7 @@
  * - Client strip: [../3.1-ClientBar/Clientbar.js]. Styles: [ProgressBar.css].
  */
 import Clientbar from '../3.1-DynamicSideBar/DynamicSideBar';
-import ClientNameTop from '../3.3-Clientnametop/clientnametop';
+import ClientNameTop from '../3.3-OutputAreaTop/OutputAreaTop';
 import TaskFormat from '../3.4-TaskFormat/taskformat';
 import './ProgressBar.css';
 

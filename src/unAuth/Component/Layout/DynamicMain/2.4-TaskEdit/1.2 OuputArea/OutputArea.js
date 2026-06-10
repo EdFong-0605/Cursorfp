@@ -5,37 +5,62 @@
  */
 import './OutputArea.css';
 
-// (Function meaning): Parent-controlled version: `OutputArea` receives `messages` from [../TaskEdit.js] and only displays them; it does not create, store, or change chat messages itself.
-// (Function meaning): `OutputArea` is the scrollable region at the top of the white area where results/output will eventually be shown; for now it is a placeholder. The parent can pass `children` (anything to display inside) — when nothing is passed, a faint "Output will appear here…" hint is shown instead so the space is never blank.
-// (Function meaning): `{ children }` pulls out the `children` value, which React automatically fills with whatever tags the parent nests inside `<OutputArea>...</OutputArea>`.
-// (Function meaning): `{ messages }` means the parent gives this component an array of chat messages; each message is expected to have an `id`, `role`, and `text`, so this component can draw each one in the chatbox.
-function OutputArea({ messages = [] }) {
+// (Function meaning): `OutputArea` receives `templateSteps` from [../TaskEdit.js] and only displays them as numbered step cards; it does not create, store, or change any data itself. The chat dialogue has moved to [../1.3 ChatArea/ChatArea.js].
+// (Function meaning): `OutputArea` is the scrollable region at the top of the right-side white body. It now has three display modes: (1) when `loading` is true it renders shimmering placeholder cards so the area never appears blank during a fetch; (2) when `templateSteps` are present it renders each step as a numbered card; (3) when both are false/empty it shows a faint placeholder hint.
+// (Function meaning): `{ templateSteps }` — the array of step objects fetched from MongoDB by [../TaskEdit.js]; each step has StepNumber, StepTitle, Reason, NeededInformation (a list of strings), TeamResponsible, and Notes.
+// (Function meaning): `{ loading }` — a boolean that [../TaskEdit.js] sets to true while the network request is in flight and back to false when it finishes or is aborted; OutputArea uses it to decide whether to show shimmer cards.
+function OutputArea({ templateSteps = [], loading = false }) {
   return (
     <div className="output-area" role="region" aria-label="Output area">
-      {/* (Function meaning): The outer box that grows to fill the leftover height and scrolls when its content is taller than the space; `output-area` is the class the stylesheet targets. */}
-      {/* (Function meaning): `children ? (...) : (...)` is a quick yes/no check — if the parent passed something to show, render that; otherwise fall back to the muted placeholder message below. */}
-      {messages.length > 0 ? (
-        <div className="output-area__messages">
-          {/* (Function meaning): The message list renders one chat bubble for every object inside `messages`; `key={message.id}` gives React a stable name for each row so it can update the list correctly when new messages are added. */}
-          {messages.map((message) => (
-            <div
-              key={message.id}
-              className={`output-area__message output-area__message--${message.role}`}
-            >
-              {/* (Function meaning): The label shows who the message came from; user messages say "You", and automatic placeholder replies say "Output". */}
-              <span className="output-area__speaker">
-                {message.role === 'user' ? 'You' : 'Output'}
-              </span>
-              {/* (Function meaning): The paragraph shows the actual message text stored in `message.text`. */}
-              <p className="output-area__text">{message.text}</p>
+      {loading ? (
+        // (Function meaning): While the fetch is running, render 4 ghost cards that pulse silver — these are pure CSS shapes with no real text; the animation is handled entirely by [outputarea.css] so React only needs to put them in the DOM.
+        <ul className="output-area__shimmer-list" aria-label="Loading…" aria-busy="true">
+          {[0, 1, 2, 3].map((n) => (
+            <li key={n} className="output-area__shimmer-card">
+              {/* (Function meaning): The pill sits in the top-left corner and mimics the "Step N" badge of a real card. */}
+              <span className="output-area__shimmer-pill" />
+              {/* (Function meaning): A wide line represents the step title text. */}
+              <span className="output-area__shimmer-line output-area__shimmer-line--title" />
+              {/* (Function meaning): A short narrow line represents the team badge. */}
+              <span className="output-area__shimmer-line output-area__shimmer-line--team" />
+              {/* (Function meaning): Two shorter lines mimic the body text / reason paragraph. */}
+              <span className="output-area__shimmer-line" />
+              <span className="output-area__shimmer-line output-area__shimmer-line--short" />
+            </li>
+          ))}
+        </ul>
+      ) : templateSteps.length > 0 ? (
+        <div className="output-area__steps">
+          {/* (Function meaning): Loop over every step and render one card per step; `key={step.StepID}` gives React a stable name for each card so the list updates correctly. */}
+          {templateSteps.map((step) => (
+            <div key={step.StepID} className="output-area__step">
+              {/* (Function meaning): The header row shows the numbered badge on the left and the step title on the right so the user can scan down the list quickly. */}
+              <div className="output-area__step-header">
+                <span className="output-area__step-number">Step {step.StepNumber}</span>
+                <span className="output-area__step-title">{step.StepTitle}</span>
+              </div>
+              {/* (Function meaning): The team badge shows which role is responsible for this step. */}
+              <span className="output-area__step-team">{step.TeamResponsible}</span>
+              {/* (Function meaning): The reason paragraph explains why this step exists so the user understands its purpose. */}
+              {step.Reason && (
+                <p className="output-area__step-reason">{step.Reason}</p>
+              )}
+              {/* (Function meaning): The needed-information list gives the user a checklist of every piece of data required before this step can be completed. */}
+              {step.NeededInformation.length > 0 && (
+                <div className="output-area__step-info">
+                  <span className="output-area__step-info-label">Needed information</span>
+                  <ul className="output-area__step-info-list">
+                    {step.NeededInformation.map((item, idx) => (
+                      <li key={idx} className="output-area__step-info-item">{item}</li>
+                    ))}
+                  </ul>
+                </div>
+              )}
             </div>
           ))}
         </div>
       ) : (
-        <>
-          {/* (Function meaning): The placeholder hint shown while there is no real output yet, so the user understands this empty area is where output will land later. */}
-          <p className="output-area__placeholder">Type below to start a chat-style output preview.</p>
-        </>
+        <p className="output-area__placeholder">Select a task type with a template to see its steps here.</p>
       )}
     </div>
   );

@@ -1,0 +1,233 @@
+/* Chat area — collapsible conversation panel below the template steps in the Task Edit white body. */
+
+/* (External references): Class names used in [ChatArea.js]. Sits inside `.task-edit-page__content--split` from [../TaskEdit.css], below [../1.2 OuputArea/outputarea.css] and above the input bar. */
+
+/* (Function meaning): `.chat-area__wrapper` is the outer shell that holds the header controls and chat body; `position: relative` lets the header float on the top edge, and `padding-top` leaves room so the controls do not cover the messages. */
+.chat-area__wrapper {
+  position: relative;
+  flex: 0 0 auto;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  align-items: stretch;
+  padding-top: 22px;
+  background-color: #161b22;
+  border-top: 1px solid rgba(43, 58, 73, 0.8);
+  overflow: visible;
+}
+
+/* (Function meaning): `.chat-area__header` stacks the resize grip above the Chat tab and pins the whole group to the top center of the wrapper; `translate(-50%, -50%)` centers it on the top border so it floats like a drawer handle. */
+.chat-area__header {
+  position: absolute;
+  top: 0;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  z-index: 3;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  pointer-events: none;
+}
+
+/* (Function meaning): `.chat-area__tab-bar` wraps the Chat pill inside the header stack; it no longer needs its own absolute positioning because the parent header already centres everything. */
+.chat-area__tab-bar {
+  display: flex;
+  justify-content: center;
+  pointer-events: none;
+}
+
+/* (Function meaning): `.chat-area__tab` is the clickable pill; `pointer-events: auto` turns clicks back on because the parent tab-bar turned them off so empty space around the pill does not block clicks on content below. */
+.chat-area__tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 5px 16px;
+  background-color: #1c2128;
+  border: 1px solid rgba(43, 58, 73, 0.95);
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.35);
+  cursor: pointer;
+  color: #8b9cb3;
+  font-size: 0.68rem;
+  font-weight: 700;
+  letter-spacing: 0.07em;
+  text-transform: uppercase;
+  transition: background-color 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+  outline: none;
+  user-select: none;
+  pointer-events: auto;
+}
+
+/* (Function meaning): On hover, the tab brightens slightly so the user knows it is interactive. */
+.chat-area__tab:hover {
+  background-color: #232a33;
+  color: #c9d1d9;
+}
+
+/* (Function meaning): `.chat-area__tab-label` is the small "Chat" text inside the pill; it sits to the left of the chevron. */
+.chat-area__tab-label {
+  line-height: 1;
+}
+
+/* (Function meaning): `.chat-area__chevron` is the small CSS-drawn arrow inside the tab; it is built from two rotated borders so no icon library is needed. By default it points downward (▾), meaning the panel is open and clicking will collapse it. */
+.chat-area__chevron {
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  border-right: 2px solid currentColor;
+  border-bottom: 2px solid currentColor;
+  transform: rotate(45deg);
+  transition: transform 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  margin-bottom: 2px;
+}
+
+/* (Function meaning): When the panel is open, the chevron rotates 180° to point upward (▴), showing the user that clicking will slide it back down. */
+.chat-area__chevron--open {
+  transform: rotate(-135deg);
+  margin-bottom: -2px;
+}
+
+/* (Function meaning): `.chat-area__resize-handle` is the drag grip that sits above the Chat tab; `pointer-events: auto` makes it clickable even though the parent header turned pointer events off for empty space around the controls. */
+.chat-area__resize-handle {
+  width: 56px;
+  height: 10px;
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: row-resize;
+  touch-action: none;
+  pointer-events: auto;
+}
+
+/* (Function meaning): The small pill drawn with `::after` is the visible grip in the center of the resize strip — it signals "drag here to change height" without taking up much space. */
+.chat-area__resize-handle::after {
+  content: '';
+  width: 48px;
+  height: 4px;
+  border-radius: 999px;
+  background-color: rgba(139, 156, 179, 0.45);
+  transition: background-color 0.15s ease, width 0.15s ease;
+}
+
+/* (Function meaning): On hover the grip brightens and widens slightly so the user knows the strip is interactive. */
+.chat-area__resize-handle:hover::after {
+  width: 56px;
+  background-color: rgba(88, 166, 255, 0.65);
+}
+
+/* (Function meaning): `.chat-area__body` is the collapsible section that holds the actual scrollable chat content; `height` is set inline from JavaScript and transitions smoothly when opening or closing; `overflow: hidden` clips content during the slide animation. */
+.chat-area__body {
+  overflow: hidden;
+  width: 100%;
+  height: 0;
+  transition: height 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+/* (Function meaning): When the `--open` modifier is added by React, `overflow: auto` lets long conversations scroll inside the panel instead of spilling out. */
+.chat-area__body--open {
+  overflow: auto;
+}
+
+/* (Function meaning): While the user is dragging the resize handle, turn off the height transition so the panel height tracks the mouse immediately with no animation lag. */
+.chat-area__body--resizing {
+  transition: none;
+}
+
+/* (Function meaning): Thin custom scrollbar inside the open chat body, matching the same style used throughout the app. */
+.chat-area__body--open::-webkit-scrollbar {
+  width: 6px;
+}
+
+.chat-area__body--open::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.chat-area__body--open::-webkit-scrollbar-thumb {
+  background-color: rgba(139, 156, 179, 0.55);
+  border-radius: 999px;
+}
+
+.chat-area__body--open::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(139, 156, 179, 0.85);
+}
+
+/* (Function meaning): The inner padding and flex layout of the chat body; separated from the collapsible wrapper so padding does not interfere with the max-height animation. */
+.chat-area__body > :first-child {
+  padding: 14px 16px;
+  box-sizing: border-box;
+}
+
+/* (Function meaning): `.chat-area__placeholder` is the faint grey hint shown while there are no messages yet; the muted colour signals it is only a temporary message, not real content. */
+.chat-area__placeholder {
+  margin: 0;
+  font-size: 0.95rem;
+  color: #8b9cb3;
+  text-align: center;
+  width: 100%;
+  padding: 14px 16px;
+  box-sizing: border-box;
+}
+
+/* (Function meaning): `.chat-area__messages` is the full chat column; `gap` creates breathing room between bubbles, and `width: 100%` lets right-aligned user bubbles reach the right edge. */
+.chat-area__messages {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+}
+
+/* (Function meaning): `.chat-area__message` is one chat bubble wrapper; `max-width` keeps long lines readable instead of letting text stretch across the full width. */
+.chat-area__message {
+  box-sizing: border-box;
+  max-width: 72%;
+  padding: 10px 12px;
+  border: 1px solid rgba(43, 58, 73, 0.95);
+  border-radius: 12px;
+  background-color: #1c2128;
+  color: #e6edf3;
+}
+
+/* (Function meaning): User bubbles are pushed to the right with `align-self: flex-end`, making them feel like outgoing messages in a chat app. */
+.chat-area__message--user {
+  align-self: flex-end;
+  color: #f0f4f8;
+  border-color: rgba(88, 166, 255, 0.65);
+  background-color: #1c2128;
+  background-image: linear-gradient(
+    105deg,
+    rgba(88, 166, 255, 0.13) 0%,
+    rgba(88, 166, 255, 0.05) 42%,
+    rgba(28, 33, 40, 0.55) 70%,
+    #1c2128 100%
+  );
+}
+
+/* (Function meaning): Output bubbles stay on the left with `align-self: flex-start`, making them feel like incoming replies. */
+.chat-area__message--output {
+  align-self: flex-start;
+  background-color: #232a33;
+  border-color: rgba(127, 147, 168, 0.5);
+}
+
+/* (Function meaning): `.chat-area__speaker` is the small bold label above each bubble text that identifies who sent the message; the muted colour keeps it lighter than the message text itself. */
+.chat-area__speaker {
+  display: block;
+  margin-bottom: 4px;
+  font-size: 0.72rem;
+  font-weight: 700;
+  color: #8b9cb3;
+}
+
+.chat-area__message--user .chat-area__speaker {
+  color: #58a6ff;
+}
+
+/* (Function meaning): `.chat-area__text` is the actual message text; `white-space: pre-wrap` keeps any line breaks the user typed while still allowing long text to wrap inside the bubble. */
+.chat-area__text {
+  margin: 0;
+  font-size: 0.95rem;
+  line-height: 1.4;
+  white-space: pre-wrap;
+}

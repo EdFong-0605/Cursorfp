@@ -11,10 +11,30 @@
   width: 100%;
   padding: 16px;
   overflow: auto;
-  background: #fff;
+  background-color: #161b22;
+  color: #e6edf3;
   display: flex;
   align-items: stretch;
   justify-content: flex-start;
+  scrollbar-width: thin;
+  scrollbar-color: rgba(139, 156, 179, 0.65) transparent;
+}
+
+.output-area::-webkit-scrollbar {
+  width: 6px;
+}
+
+.output-area::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.output-area::-webkit-scrollbar-thumb {
+  background-color: rgba(139, 156, 179, 0.55);
+  border-radius: 999px;
+}
+
+.output-area::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(139, 156, 179, 0.85);
 }
 
 /* (Function meaning): `.output-area__placeholder` is the faint grey hint shown while there is no real output; the muted colour signals it is only a temporary message, not actual content. */
@@ -27,50 +47,185 @@
   width: 100%;
 }
 
-/* (Function meaning): `.output-area__messages` is the full chat column; `gap` creates space between message bubbles, and `width: 100%` lets right-aligned user messages move to the right edge. */
-.output-area__messages {
+/* ── Template step line items ───────────────────────────────────────── */
+
+/* (Function meaning): `.output-area__steps` is the full column of step cards; `gap` creates breathing room between each card, and `width: 100%` lets each card span the full content width. */
+.output-area__steps {
   display: flex;
   flex-direction: column;
   gap: 12px;
   width: 100%;
-}
-
-/* (Function meaning): `.output-area__message` is one chat bubble wrapper; `max-width` keeps long lines readable instead of letting text stretch across the entire white area. */
-.output-area__message {
-  box-sizing: border-box;
-  max-width: 72%;
-  padding: 10px 12px;
-  border: 1px solid #d5dde7;
-  border-radius: 12px;
-  background: #f5f8fb;
-}
-
-/* (Function meaning): User messages are pushed to the right side with `align-self: flex-end`, making them feel like outgoing chat messages. */
-.output-area__message--user {
-  align-self: flex-end;
-  color: #fff;
-  background: #2b3a49;
-  border-color: #2b3a49;
-}
-
-/* (Function meaning): Output messages stay on the left side with `align-self: flex-start`, making them feel like replies from the page. */
-.output-area__message--output {
   align-self: flex-start;
 }
 
-/* (Function meaning): `.output-area__speaker` is the small label above each message text; it helps the user understand who said the message. */
-.output-area__speaker {
-  display: block;
-  margin-bottom: 4px;
-  font-size: 0.72rem;
-  font-weight: 700;
-  opacity: 0.75;
+/* (Function meaning): `.output-area__step` is one step card; a subtle left border (accent stripe) makes each card feel like a distinct list item, and the inner padding keeps text from pressing against the edges. */
+.output-area__step {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid rgba(43, 58, 73, 0.95);
+  border-left: 3px solid #58a6ff;
+  border-radius: 10px;
+  background-color: #1c2128;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 
-/* (Function meaning): `.output-area__text` is the actual chat text; `white-space: pre-wrap` keeps line breaks the user typed while still allowing long text to wrap inside the bubble. */
-.output-area__text {
-  margin: 0;
+/* (Function meaning): `.output-area__step-header` lays the step number badge and the step title side by side on one line with a small gap between them. */
+.output-area__step-header {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* (Function meaning): `.output-area__step-number` is the small pill badge that shows "Step 1", "Step 2", etc.; the blue background matches the left-border accent colour so the two visual cues feel connected. */
+.output-area__step-number {
+  flex-shrink: 0;
+  padding: 2px 8px;
+  border-radius: 999px;
+  background-color: rgba(88, 166, 255, 0.18);
+  color: #58a6ff;
+  font-size: 0.72rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+}
+
+/* (Function meaning): `.output-area__step-title` is the human-readable name of the step; the heavier weight and lighter colour make it the most prominent text on the card. */
+.output-area__step-title {
   font-size: 0.95rem;
-  line-height: 1.4;
+  font-weight: 600;
+  color: #e6edf3;
+  line-height: 1.3;
+}
+
+/* (Function meaning): `.output-area__step-team` is the small label that shows which team or role is responsible; muted colour signals it is secondary information, not the main title. */
+.output-area__step-team {
+  display: inline-block;
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #8b9cb3;
+  letter-spacing: 0.03em;
+  text-transform: capitalize;
+}
+
+/* (Function meaning): `.output-area__step-reason` is the sentence that explains why the step exists; `pre-wrap` preserves any intentional line breaks in the text while still allowing normal wrapping. */
+.output-area__step-reason {
+  margin: 0;
+  font-size: 0.88rem;
+  color: #c9d1d9;
+  line-height: 1.5;
   white-space: pre-wrap;
+}
+
+/* (Function meaning): `.output-area__step-info` wraps the "Needed information" label and its bullet list together so they stay visually grouped inside the card. */
+.output-area__step-info {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+
+/* (Function meaning): `.output-area__step-info-label` is the small uppercase heading above the bullet list; the muted blue-grey colour keeps it visually lighter than the step title. */
+.output-area__step-info-label {
+  font-size: 0.70rem;
+  font-weight: 700;
+  color: #8b9cb3;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+}
+
+/* (Function meaning): `.output-area__step-info-list` is the bullet list of required information items; the left padding creates the indent so bullets are clearly inside the card body. */
+.output-area__step-info-list {
+  margin: 0;
+  padding-left: 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+/* (Function meaning): `.output-area__step-info-item` is one bullet item in the required information list; the smaller size and muted colour signal that these are supporting details, not headings. */
+.output-area__step-info-item {
+  font-size: 0.85rem;
+  color: #adbac7;
+  line-height: 1.4;
+}
+
+/* ── Loading shimmer ────────────────────────────────────────────────── */
+
+/* (Function meaning): `@keyframes output-area-shimmer` defines the animation that makes the grey skeleton cards look like they are glowing from left to right — the gradient starts completely off the left edge, sweeps across to the right, and then disappears off the right edge, creating the illusion of light passing over a surface. */
+@keyframes output-area-shimmer {
+  0%   { background-position: -400px 0; }
+  100% { background-position:  400px 0; }
+}
+
+/* (Function meaning): `.output-area__shimmer-list` is an unstyled column of ghost cards, laid out identically to `.output-area__steps` so the skeleton occupies the same space as the real content would. `list-style: none` removes the browser's default bullet points because these are purely visual placeholders, not real list items. */
+.output-area__shimmer-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  width: 100%;
+  align-self: flex-start;
+}
+
+/* (Function meaning): `.output-area__shimmer-card` is one ghost card in the skeleton list; it mirrors the look of `.output-area__step` (same border, same radius, same background) so the layout does not jump when real cards replace it. */
+.output-area__shimmer-card {
+  box-sizing: border-box;
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid rgba(43, 58, 73, 0.95);
+  border-left: 3px solid rgba(88, 166, 255, 0.25);
+  border-radius: 10px;
+  background-color: #1c2128;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+/* (Function meaning): `.output-area__shimmer-line` and `.output-area__shimmer-pill` share the same sweeping gradient background — this is the silver-light effect; `background-size: 800px 100%` makes the gradient wider than any single element so it can slide across smoothly without repeating; `animation` applies the keyframes above so the light sweeps continuously every 1.4 seconds. */
+.output-area__shimmer-line,
+.output-area__shimmer-pill {
+  display: block;
+  border-radius: 6px;
+  background: linear-gradient(
+    90deg,
+    rgba(255, 255, 255, 0.04) 25%,
+    rgba(255, 255, 255, 0.12) 50%,
+    rgba(255, 255, 255, 0.04) 75%
+  );
+  background-size: 800px 100%;
+  animation: output-area-shimmer 1.4s infinite linear;
+}
+
+/* (Function meaning): `.output-area__shimmer-pill` mimics the "Step N" badge shape — tall enough for one line of text, just wide enough to look like a word, and fully rounded so it looks like the real pill badge. */
+.output-area__shimmer-pill {
+  width: 64px;
+  height: 18px;
+  border-radius: 999px;
+}
+
+/* (Function meaning): `.output-area__shimmer-line` without a modifier is a medium-width bar representing a line of body text. */
+.output-area__shimmer-line {
+  height: 13px;
+  width: 85%;
+}
+
+/* (Function meaning): `--title` makes the title line taller and almost full-width so it looks like a prominent heading word. */
+.output-area__shimmer-line--title {
+  height: 15px;
+  width: 60%;
+}
+
+/* (Function meaning): `--team` is narrower and slightly shorter to mimic the small "team responsible" label. */
+.output-area__shimmer-line--team {
+  height: 11px;
+  width: 30%;
+}
+
+/* (Function meaning): `--short` cuts the line to about half width to vary the skeleton and make it look more natural, like a paragraph that ends early. */
+.output-area__shimmer-line--short {
+  width: 50%;
 }
